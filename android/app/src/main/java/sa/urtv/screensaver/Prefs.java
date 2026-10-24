@@ -214,6 +214,9 @@ final class Prefs {
         {"today", "الصلاة القادمة ووقتها، والمباراة القادمة لفرقك، وأول مهمة مفتوحة، والمناسبة القادمة وكم يوم باقي"},
         {"none", "بدون بطاقة"},
     };
+    // colour of the lines and labels (sent to the page as #theme=; gold is the plain default)
+    static final String[][] THEMES = {{"gold", "ذهبي"}, {"green", "أخضر"}, {"silver", "فضي"}, {"blue", "أزرق"}};
+
     static final String[][] CARD_STYLE_ABOUT = {
         {"current", "البطاقة كما كانت، بخلفية داكنة شفافة"},
         {"dark1", "داكنة بزوايا مدوّرة وخط ذهبي على جهة الساعة"},
@@ -294,6 +297,13 @@ final class Prefs {
 
     String cardStyle() { return sp.getString("cardStyle", "current"); }
     void setCardStyle(String v) { sp.edit().putString("cardStyle", v).apply(); }
+
+    String theme() { return sp.getString("theme", "gold"); }
+    void setTheme(String v) { sp.edit().putString("theme", v).apply(); }
+    static String themeLabel(String v) {
+        for (String[] c : THEMES) if (c[0].equals(v)) return c[1];
+        return THEMES[0][1];
+    }
 
     static String cardStyleLabel(String v) {
         for (String[] c : CARD_STYLES) if (c[0].equals(v)) return c[1];
@@ -381,6 +391,7 @@ final class Prefs {
             + "&photos=" + photoMinutes()
             + "&digits=" + digits()
             + "&cardstyle=" + cardStyle()
+            + "&theme=" + theme()
             + "&adhanbar=" + (adhanBar() ? "1" : "0")
             + "&yearstrip=" + (yearStrip() ? "1" : "0")
             + PrayerAdj.fragment(prayerAdjOn(), prayerAdj())

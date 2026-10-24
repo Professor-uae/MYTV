@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <!-- the build: UTC time (YYYYMMDDHHMMSS) of the newest commit of the page's sources, put in by src/build.py. The app loads the page with the newer stamp (its own
      copy or a downloaded one), never by file time, and does not keep a download whose stamp is older than its own (Updater, PageStamp). -->
-<meta name="urtv-build" content="20261024102902">
+<meta name="urtv-build" content="20261024125414">
 <title>شاشة تلفزيونك</title>
 <style>
   @font-face{font-family:'Thmanyah';font-weight:300;font-style:normal;font-display:block;src:url("https://raw.githubusercontent.com/Professor-uae/MYTV/master/assets/fonts/Thmanyah-Light.woff2") format("woff2")}
@@ -28,6 +28,10 @@
     --green-lt:#57D294;
     --red:#EE6A50;
   }
+  /* colour themes (#theme=green|silver|blue; gold is the plain default): the accents of lines and labels */
+  html.theme-green{--gold:#7FD1A8;--gold-2:#6BC597;--gold-3:#93DDB7;--gold-hi:#D8F6E6;--gold-rgb:127,209,168}
+  html.theme-silver{--gold:#D5DBE3;--gold-2:#C3CAD4;--gold-3:#E1E6EC;--gold-hi:#FFFFFF;--gold-rgb:213,219,227}
+  html.theme-blue{--gold:#8FC4F0;--gold-2:#7AB6E6;--gold-3:#A6D3F5;--gold-hi:#E2F2FF;--gold-rgb:143,196,240}
   /* National Day and Founding Day (see nationalNow()): the gold accents turn Saudi green, light enough to read on the dark photos */
   html.nat{--gold:#34B872;--gold-2:#2FAE6B;--gold-3:#4CCB88;--gold-hi:#CDF3DD;--gold-rgb:52,184,114}
   *{margin:0;padding:0;box-sizing:border-box}
@@ -656,6 +660,8 @@ const CONFIG = {
   digits: _Q.get('digits') === 'hindi' ? 'hindi' : 'latin',
   // the look of the card beside the clock: #cardstyle=current|dark1|glass1|dark3|glass3 (anything else = current)
   cardStyle: (v => ['dark1','glass1','dark3','glass3'].includes(v) ? v : 'current')(_Q.get('cardstyle')),
+  // the colour of the lines and labels: #theme=gold|green|silver|blue (gold = the plain default)
+  theme: (v => ['green','silver','blue'].includes(v) ? v : 'gold')(_Q.get('theme')),
   // the markets at the top left: #markets=tasi,spx,btc (up to 4 of tasi aramco spx btc gold silver xrp; anything else = the default)
   // and #mkstyle=arrows (a ▲/▼ only, the default) or prices (the price and the day's change)
   markets: (l => l.length ? l : ['tasi','spx','btc'])(
@@ -688,6 +694,7 @@ const CONFIG = {
   // the full-screen iqama countdown: #iqamafull=0 turns it off (anything else = on); never on the home screen's widget
   iqamaFull: _Q.get('iqamafull') !== '0',
 };
+if(CONFIG.theme !== 'gold') document.documentElement.classList.add('theme-' + CONFIG.theme);   // the colour theme: the CSS above
 // The cards on this page: the screensaver's one (#panel=); the launcher's up to three (#home_panel=a,b,c, none or empty = no card;
 // an older launcher sends the one card as #panel=). Each kind once, in order.
 CONFIG.cards = (CONFIG.widget && _Q.has('home_panel') ? _list('home_panel') : [CONFIG.panel])

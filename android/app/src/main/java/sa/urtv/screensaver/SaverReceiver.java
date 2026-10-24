@@ -44,6 +44,7 @@ import java.util.Locale;
  * "clear"; cdname = its name (up to 40 characters).
  * national = auto (as always from now: the quiet green look on National Day, 21-25 September, and Founding Day, 20-24 February) or off.
  * cardstyle = the look of the card beside the clock (Prefs.CARD_STYLES; current is the plain card).
+ * theme = the colour of the lines and labels (Prefs.THEMES; gold is the plain default).
  * markets = up to four of Prefs.MARKETS at the top left, in order; mkstyle = arrows only (as always) or the price and the day's change.
  * stocks = the watchlist of the stocks card (panel stocks): up to Prefs.MAX_STOCKS Tadawul codes (4 digits) or US tickers.
  * digits = hindi (١٢٣, as always) or latin (123). photos = minutes between background photos (Prefs.PHOTO_MINUTES). idle = minutes before the TV starts the
@@ -198,6 +199,9 @@ public class SaverReceiver extends BroadcastReceiver {
         String national = i.getStringExtra("national");
         if (national != null && !isChoice(Prefs.NATIONAL, national))
             return "error: national is one of " + choices(Prefs.NATIONAL);
+        String theme = i.getStringExtra("theme");
+        if (theme != null && !isChoice(Prefs.THEMES, theme))
+            return "error: theme is one of " + choices(Prefs.THEMES);
         String cardStyle = i.getStringExtra("cardstyle");
         if (cardStyle != null && !isChoice(Prefs.CARD_STYLES, cardStyle))
             return "error: cardstyle is one of " + choices(Prefs.CARD_STYLES);
@@ -279,6 +283,7 @@ public class SaverReceiver extends BroadcastReceiver {
         if (digits != null) p.setDigits(digits);
         if (national != null) p.setNational(national);
         if (cardStyle != null) p.setCardStyle(cardStyle);
+        if (theme != null) p.setTheme(theme);
         if (mkStyle != null) p.setMkStyle(mkStyle);
         if (markets != null) p.setMarkets(markets);
         if (stocks != null) p.setStocks(stocks);

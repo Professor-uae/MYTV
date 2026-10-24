@@ -22,6 +22,7 @@ import android.view.ViewOutlineProvider;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
@@ -167,6 +168,8 @@ public class SettingsActivity extends Activity {
 
         header("بجانب الساعة");
         row("المحتوى", Prefs.panelLabel(prefs.panel()), R.drawable.ic_eye, new Runnable() { public void run() { pickPanel(-1); } });
+        row("الألوان", Prefs.themeLabel(prefs.theme()), R.drawable.ic_eye,
+            new Runnable() { public void run() { pickTheme(); } });
         row("شكل البطاقة", Prefs.cardStyleLabel(prefs.cardStyle()), R.drawable.ic_eye,
             new Runnable() { public void run() { pickCardStyle(); } });
 
@@ -415,24 +418,48 @@ public class SettingsActivity extends Activity {
         final String[] labels = new String[Prefs.LEAGUES.length];
         final boolean[] on = new boolean[Prefs.LEAGUES.length];
         for (int i = 0; i < labels.length; i++) { labels[i] = Prefs.LEAGUES[i][1]; on[i] = cur.contains(Prefs.LEAGUES[i][0]); }
-        new Dlg(this)
+        // the list has a fixed height and the two buttons sit under it, so they stay on the TV's screen whatever the count
+        final ListView list = new ListView(this);
+        list.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
+        list.setAdapter(new android.widget.ArrayAdapter<String>(this, android.R.layout.simple_list_item_multiple_choice, labels));
+        for (int i = 0; i < labels.length; i++) list.setItemChecked(i, on[i]);
+        list.setOnItemClickListener((parent, view, i, id) -> {
+            int n = 0;
+            for (boolean b : on) if (b) n++;
+            if (!on[i] && n >= Prefs.MAX_LEAGUES) { list.setItemChecked(i, false); toast("حتى " + arabicNum(Prefs.MAX_LEAGUES) + " دوريات"); return; }
+            on[i] = list.isItemChecked(i);
+        });
+        LinearLayout root = new LinearLayout(this);
+        root.setOrientation(LinearLayout.VERTICAL);
+        root.addView(list, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(330)));
+        LinearLayout row = new LinearLayout(this);
+        row.setOrientation(LinearLayout.HORIZONTAL);
+        row.setGravity(Gravity.END);
+        row.setPadding(0, dp(8), 0, 0);
+        root.addView(row, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        final AlertDialog[] box = new AlertDialog[1];
+        android.widget.Button cancel = new android.widget.Button(this);
+        cancel.setText("إلغاء");
+        cancel.setFocusable(true);
+        cancel.setOnClickListener(v -> box[0].dismiss());
+        android.widget.Button save = new android.widget.Button(this);
+        save.setText("حفظ");
+        save.setFocusable(true);
+        save.setOnClickListener(v -> {
+            List<String> out = new ArrayList<>();
+            for (int i = 0; i < on.length; i++) if (on[i]) out.add(Prefs.LEAGUES[i][0]);
+            prefs.setList("leagues", out);
+            box[0].dismiss();
+            render();
+        });
+        row.addView(cancel);
+        row.addView(save);
+        box[0] = new Dlg(this)
             .setTitle("الدوريات كاملة (حتى " + arabicNum(Prefs.MAX_LEAGUES) + "، بدون اختيار = بدون)")
-            .setMultiChoiceItems(labels, on, (d, i, checked) -> {
-                int n = 0;
-                for (boolean b : on) if (b) n++;
-                if (checked && n > Prefs.MAX_LEAGUES) {
-                    on[i] = false;
-                    ((AlertDialog) d).getListView().setItemChecked(i, false);
-                    toast("حتى " + arabicNum(Prefs.MAX_LEAGUES) + " دوريات");
-                }
-            })
-            .setPositiveButton("حفظ", (d, w) -> {
-                List<String> v = new ArrayList<>();
-                for (int i = 0; i < on.length; i++) if (on[i]) v.add(Prefs.LEAGUES[i][0]);
-                prefs.setList("leagues", v);
-                render();
-            })
-            .setNegativeButton("إلغاء", null).show();
+            .setView(root)
+            .create();
+        box[0].show();
+        save.requestFocus();
     }
 
     private void manageShows() {
@@ -711,6 +738,18 @@ public class SettingsActivity extends Activity {
         new Dlg(this).setTitle("عرض الأسواق")
             .setSingleChoiceItems(labels, sel, (d, i) -> { prefs.setMkStyle(Prefs.MK_STYLES[i][0]); d.dismiss(); render(); })
             .show();
+    }
+
+    private void pickTheme() {
+        String[] labels = new String[Prefs.THEMES.length];
+        int sel = 0;
+        for (int i = 0; i < labels.length; i++) {
+            labels[i] = Prefs.THEMES[i][1];
+            if (Prefs.THEMES[i][0].equals(prefs.theme())) sel = i;
+        }
+        new Dlg(this).setTitle("الألوان: الخطوط والنص")
+            .setSingleChoiceItems(labels, sel, (d, i) -> { prefs.setTheme(Prefs.THEMES[i][0]); d.dismiss(); render(); })
+            .setNegativeButton("إلغاء", null).show();
     }
 
     private void pickCardStyle() {

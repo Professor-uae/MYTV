@@ -419,7 +419,7 @@ public class MainActivity extends Activity {
         sleepPill.setOnClickListener(v -> showSleep(v));
         // «خروج»: UrTV is the home screen, so leaving it means choosing another one; this opens the TV's home-app chooser
         Pill exit = pill("خروج", R.drawable.ic_stop);
-        exit.setOnClickListener(v -> launch(new Intent(Settings.ACTION_HOME_SETTINGS)));
+        exit.setOnClickListener(v -> openOtherHome());
         List<Pill> row = new ArrayList<>(Arrays.asList(inputs, wifiPill, settings, sleepPill));
         if (isInstalled(SAVER_PKG)) { row.add(tasks); row.add(saver); }
         if (getResources().getBoolean(R.bool.show_listening)) row.add(tilawah);
@@ -456,6 +456,19 @@ public class MainActivity extends Activity {
     }
 
     /** Pill button: its icon only; the one with the focus widens to show its name (see Pill). */
+    /** «خروج»: opens another home screen the TV has (Google TV's), without changing the default; if none, the settings. */
+    private void openOtherHome() {
+        Intent home = new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME);
+        for (android.content.pm.ResolveInfo ri : getPackageManager().queryIntentActivities(home, 0)) {
+            if (ri.activityInfo == null || getPackageName().equals(ri.activityInfo.packageName)) continue;
+            Intent i = new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME)
+                .setComponent(new android.content.ComponentName(ri.activityInfo.packageName, ri.activityInfo.name))
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            try { startActivity(i); return; } catch (RuntimeException ignored) { }
+        }
+        launch(new Intent(Settings.ACTION_SETTINGS));
+    }
+
     private Pill pill(String label, int icon) {
         Pill p = new Pill(this, label, icon, font("sans-serif-medium"));
         p.setId(View.generateViewId());

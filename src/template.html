@@ -502,6 +502,15 @@
     .p-match{grid-column:1/-1;text-align:right}
     .mrow{align-items:flex-start}
   }
+  /* «الإقامة» full screen: from the adhan to the iqama the whole screen counts down, and for a minute after the iqama it says «قوموا إلى الصلاة» */
+  .iqama-full{position:fixed;inset:0;z-index:60;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2.5vh;
+    background:rgba(8,6,3,.86);color:var(--sand);text-align:center;padding:4vh 5vw}
+  .iqama-full[hidden]{display:none}
+  .iqama-full .iq-name{font-size:clamp(28px,4.2vw,72px);font-weight:600;color:var(--gold-hi)}
+  .iqama-full .iq-label{font-size:clamp(22px,2.6vw,44px);color:var(--sand);opacity:.9}
+  .iqama-full .iq-time{font-size:clamp(90px,20vw,300px);font-weight:700;color:var(--gold-hi);line-height:1;font-variant-numeric:tabular-nums;direction:ltr}
+  .iqama-full .iq-go{font-size:clamp(48px,8vw,150px);font-weight:700;color:var(--gold-hi);line-height:1.2}
+  .iqama-full .iq-adhan{font-size:clamp(20px,2vw,36px);opacity:.75}
 </style>
 </head>
 <body>
@@ -623,8 +632,8 @@ const CONFIG = {
   queueGapMs: Math.max(0, Math.min(5000, _num('gap', 400))),
   weekGapMs: Math.max(0, Math.min(5000, _num('gap', 500))),
   retryMs: Math.max(1000, _num('retry', 120000)),
-  // minutes from adhan to iqama (Ministry of Islamic Affairs defaults); Friday Dhuhr has none
-  iqama: {Fajr:25, Dhuhr:20, Asr:20, Maghrib:10, Isha:20},
+  // minutes from adhan to iqama (Abu Dhabi mosque timetable, 24 Oct 2026: Maghrib 8); Friday Dhuhr has none
+  iqama: {Fajr:25, Dhuhr:20, Asr:20, Maghrib:8, Isha:20},
   // "new this week" filters from the app: TVMaze genres, languages, countries, picked show ids
   shows: {
     genres: _list('genres'),
@@ -639,8 +648,8 @@ const CONFIG = {
   // the owner's own photos («صوري»): #own=how many (0-10) and #ownmode=mix (join ours, the default) or only
   own: Math.max(0, Math.min(10, Math.floor(_num('own', 0)))),
   ownMode: _Q.get('ownmode') === 'only' ? 'only' : 'mix',
-  // digits everywhere: #digits=hindi (١٢٣, the default) or latin (123); anything else = hindi
-  digits: _Q.get('digits') === 'latin' ? 'latin' : 'hindi',
+  // digits everywhere: latin (123, the default: Western digits, Hijri dates included) or #digits=hindi (١٢٣); anything else = latin
+  digits: _Q.get('digits') === 'hindi' ? 'hindi' : 'latin',
   // the look of the card beside the clock: #cardstyle=current|dark1|glass1|dark3|glass3 (anything else = current)
   cardStyle: (v => ['dark1','glass1','dark3','glass3'].includes(v) ? v : 'current')(_Q.get('cardstyle')),
   // the markets at the top left: #markets=tasi,spx,btc (up to 4 of tasi aramco spx btc gold silver xrp; anything else = the default)
@@ -672,6 +681,8 @@ const CONFIG = {
   live: _Q.get('live') === '1',
   // #widget=1: only the cards, on a transparent page (the launcher's home screen shows them)
   widget: _Q.get('widget') === '1',
+  // the full-screen iqama countdown: #iqamafull=0 turns it off (anything else = on); never on the home screen's widget
+  iqamaFull: _Q.get('iqamafull') !== '0',
 };
 // The cards on this page: the screensaver's one (#panel=); the launcher's up to three (#home_panel=a,b,c, none or empty = no card;
 // an older launcher sends the one card as #panel=). Each kind once, in order.
@@ -920,6 +931,37 @@ function tickAdhanBar(){
   if(!bar) return;
   bar.hidden = !t;
   if(t) setText(bar, t);
+}
+
+// ---- the full-screen iqama countdown: from the adhan to the iqama the screen counts the seconds down, and for a minute after the iqama it
+// says «قوموا إلى الصلاة». Same windows as tickPrayer (Friday's Dhuhr has no iqama wait). Runs every second; the overlay is hidden otherwise.
+function tickIqamaFull(){
+  const el = document.getElementById('iqama-full');
+  if(!el) return;
+  if(!CONFIG.iqamaFull || CONFIG.widget || !PRAYERS.length){ el.hidden = true; return; }
+  const p = riyadhParts(), mins = p.h*60 + p.mi + p.s/60;
+  const gapOf = x => (x.key === 'Dhuhr' && isFriday()) ? 0 : (CONFIG.iqama[x.key] || 0);
+  const wait = PRAYERS.find(x => { const at = x.h*60 + x.mi, g = gapOf(x); return g > 0 && mins >= at && mins < at + g; });
+  const done = PRAYERS.find(x => { const end = x.h*60 + x.mi + gapOf(x); return gapOf(x) > 0 && mins >= end && mins < end + 1; });
+  const elName = document.getElementById('iq-name'), elLabel = document.getElementById('iq-label'),
+        elTime = document.getElementById('iq-time'), elGo = document.getElementById('iq-go');
+  if(wait){
+    const endMin = wait.h*60 + wait.mi + gapOf(wait);
+    const secs = Math.max(0, Math.ceil((endMin - mins) * 60));
+    el.hidden = false;
+    const wh = wait.h % 12 === 0 ? 12 : wait.h % 12;
+    setText(elName, prayerName(wait) + ' · الأذان ' + wh + ':' + pad(wait.mi) + ' ' + (wait.h < 12 ? 'ص' : 'م'));
+    setText(elLabel, 'الإقامة بعد');
+    setText(elTime, pad(Math.floor(secs/60)) + ':' + pad(secs%60));   // Western digits, always (the countdown is not part of CONFIG.digits)
+    elLabel.hidden = false; elTime.hidden = false; elGo.hidden = true;
+  }else if(done){
+    el.hidden = false;
+    setText(elName, prayerName(done));
+    setText(elLabel, '');
+    elLabel.hidden = true; elTime.hidden = true; elGo.hidden = false;
+  }else{
+    el.hidden = true;
+  }
 }
 
 function tickPrayer(){
@@ -1293,7 +1335,7 @@ function matchSlot(id, now, shown){
 // branch data-leagues); the page downloads one file per followed league every 30 minutes and no more: that is the
 // whole cost of a league, however many clubs it has. A game in progress is refreshed by lookupevent.php like a followed
 // team's (loadLive), at most LEAGUE_LIVE_MAX of them at a time.
-const LEAGUE_BASE = 'https://raw.githubusercontent.com/tshi-dev/UrTV/data-leagues/leagues/';
+const LEAGUE_BASE = 'https://raw.githubusercontent.com/Professor-uae/MYTV/data-leagues/leagues/';
 const LEAGUE_LIVE_MAX = 6;
 const leagueSlug = n => String(n).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');   // team_ids.slug()
 let LEAGUE_DATA = (()=>{ try{ return JSON.parse(localStorage.getItem('leagueData') || '{}') || {}; }catch(e){ return {}; } })();   // name -> its file
@@ -1860,7 +1902,7 @@ async function fetchT(url, ms){
 
 // ---- prices. First the file CI keeps (.github/tools/market_prices.py, branch data-markets): one download holds every market and the
 // common stocks, so the TVs do not each ask Yahoo. A symbol that is not in it, or a file older than 3 hours, is asked of Yahoo itself.
-const MARKET_URL = 'https://raw.githubusercontent.com/tshi-dev/UrTV/data-markets/markets/markets.json';
+const MARKET_URL = 'https://raw.githubusercontent.com/Professor-uae/MYTV/data-markets/markets/markets.json';
 const MARKET_TRUST_MS = 3*3600000;
 let MARKET_FILE = null;   // {updated, quotes: {symbol: {p, v, c, t}}}
 async function loadMarketFile(){
@@ -2849,7 +2891,7 @@ function pixelShift(){
 
 // Background photos: the hosted set in photos/ (photos/index.json in the repo). A hosted photo is used only
 // once it has loaded; offline, or if it fails, a bundled one is shown, so the screen is never empty.
-const PHOTO_BASE = 'https://raw.githubusercontent.com/tshi-dev/UrTV/master/photos/';
+const PHOTO_BASE = 'https://raw.githubusercontent.com/Professor-uae/MYTV/master/photos/';
 let REMOTE_BGS = (()=>{ try{ return JSON.parse(localStorage.getItem('photoIndex') || '[]'); }catch(e){ return []; } })();
 
 // The owner's own photos: the app answers OWN_BASE N.jpg (1..CONFIG.own) from its own folder, never from the network.
@@ -3167,6 +3209,7 @@ function boot(){
   setInterval(nowPlayingTick, 60*1000);
   setInterval(tickClock, 1000);
   setInterval(()=>{ tickDates(); tickPrayer(); tickOccasion(); wxExpire(); if(!SLOT_MATCHES) renderSlot(); }, 15000);
+  setInterval(tickIqamaFull, 1000);
   if(SLOT_MATCHES){   // the matches timers run only while the slot shows matches
     setInterval(() => renderMatches(false), 60000);
     // 15 s a page (two games), 10 s once a league makes more than 3 pages: a round of 9 games passes in 50 s, not 75
@@ -3225,5 +3268,11 @@ document.addEventListener('keydown', e=>{
 
 boot();
 </script>
+<div class="iqama-full" id="iqama-full" hidden>
+  <div class="iq-name" id="iq-name"></div>
+  <div class="iq-label" id="iq-label">الإقامة بعد</div>
+  <div class="iq-time" id="iq-time"></div>
+  <div class="iq-go" id="iq-go" hidden>قوموا إلى الصلاة</div>
+</div>
 </body>
 </html>

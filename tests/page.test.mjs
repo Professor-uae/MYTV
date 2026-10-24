@@ -1488,7 +1488,7 @@ for (const [width, height] of [[461, 250], [1920, 1080], [960, 540]]) {   // lon
       ['2026-10-22T13:40:00Z', '16:40', '٥:٤٧ م', 'المغرب ٥:٤٧ م', ''],
       ['2026-10-22T14:44:00Z', '17:44, three minutes to the moved adhan', '٥:٤٧ م', 'المغرب ٥:٤٧ م', 'الأذان بعد ٣ دقائق'],
       ['2026-10-22T14:46:00Z', '17:46: the unmoved Maghrib has passed, the moved one has not', '٥:٤٧ م', 'المغرب ٥:٤٧ م', 'الأذان بعد ١ دقيقة'],
-      ['2026-10-22T14:50:00Z', '17:50: in the iqama wait (17:47 + 10)', '٥:٤٧ م', 'المغرب ٥:٤٧ م', 'الإقامة بعد ٧ دقائق']]) {
+      ['2026-10-22T14:50:00Z', '17:50: in the iqama wait (17:47 + 8)', '٥:٤٧ م', 'المغرب ٥:٤٧ م', 'الإقامة بعد ٥ دقائق']]) {
     for (const [hash, width, height] of [[FRAG, 1920, 1080], [FRAG + '&widget=1', 561, 253]]) {
       const { p, ctx, errors } = await open('tv.html', hash, { width, height });
       await p.clock.setFixedTime(new Date(when));
@@ -2398,7 +2398,7 @@ for (const [width, height] of [[1920, 1080], [1280, 720], [960, 540]]) {
 }
 
 // ---- the bar before the adhan: «الأذان بعد ٨ دقائق» in the last 10 minutes before each prayer, «الإقامة بعد ١٢ دقيقة» from the adhan
-// to the iqama (Fajr 25, Maghrib 10, the rest 20; none for a Friday's Dhuhr); #adhanbar=0 turns it off. Times held with Date.now.
+// to the iqama (Fajr 25, Maghrib 8, the rest 20; none for a Friday's Dhuhr); #adhanbar=0 turns it off. Times held with Date.now.
 const ADHAN_TIMES = "buildPrayers({ Fajr: '04:50', Sunrise: '06:05', Dhuhr: '11:40', Asr: '15:00', Maghrib: '17:45', Isha: '19:15' });";
 const barAt = (p, day, hhmm, ss = '00') => p.evaluate(([iso, times]) => {
   const R = window.__R || (window.__R = Date), T = Date.parse(iso);
@@ -2420,7 +2420,7 @@ for (const [width, height] of [[1920, 1080], [1280, 720], [960, 540]]) {
     check(`${tag}: no script errors`, !errors.length, errors.join('; '));
     check(`${tag}: the last 10 minutes: «الأذان بعد …», shown from exactly 10 minutes before, not 11`,
       !r.m10.hidden && r.m10.text === N('الأذان بعد ١٠ دقائق') && !r.m8.hidden && r.m8.text === N('الأذان بعد ٧ دقائق') && r.m1.text === N('الأذان بعد ١ دقيقة') && r.over10.hidden, JSON.stringify([r.m10, r.m8, r.m1, r.over10]));
-    check(`${tag}: from the adhan to the iqama: «الإقامة بعد …» (Maghrib 10, Fajr 25, Asr and Isha 20, Dhuhr 20)`,
+    check(`${tag}: from the adhan to the iqama: «الإقامة بعد …» (Maghrib 8, Fajr 25, Asr and Isha 20, Dhuhr 20)`,
       r.at.text === N('الإقامة بعد ١٠ دقائق') && r.q5.text === N('الإقامة بعد ٥ دقائق') && r.end.hidden && r.fajr.text === N('الإقامة بعد ٢٥ دقيقة') && r.asr.text === N('الإقامة بعد ١٥ دقيقة')
       && r.isha.text === N('الإقامة بعد ١٥ دقيقة') && r.dhuhr.text === N('الإقامة بعد ٢٠ دقيقة'), JSON.stringify([r.at.text, r.q5.text, r.end.hidden, r.fajr.text, r.asr.text, r.isha.text, r.dhuhr.text]));
     check(`${tag}: Friday's Dhuhr has no iqama countdown, the adhan countdown before it is there; between prayers nothing`,

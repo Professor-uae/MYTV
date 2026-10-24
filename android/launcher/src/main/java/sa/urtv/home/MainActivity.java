@@ -417,9 +417,13 @@ public class MainActivity extends Activity {
         tilawah.setOnClickListener(v -> launch(new Intent(this, sa.urtv.home.tilawah.MainActivity.class)));
         sleepPill = pill("مؤقت النوم", R.drawable.ic_sleep);
         sleepPill.setOnClickListener(v -> showSleep(v));
+        // «خروج»: UrTV is the home screen, so leaving it means choosing another one; this opens the TV's home-app chooser
+        Pill exit = pill("خروج", R.drawable.ic_stop);
+        exit.setOnClickListener(v -> launch(new Intent(Settings.ACTION_HOME_SETTINGS)));
         List<Pill> row = new ArrayList<>(Arrays.asList(inputs, wifiPill, settings, sleepPill));
         if (isInstalled(SAVER_PKG)) { row.add(tasks); row.add(saver); }
         if (getResources().getBoolean(R.bool.show_listening)) row.add(tilawah);
+        row.add(exit);
         for (Pill p : row) {
             right.addView(p, llp(-2, dp(Pill.HEIGHT), dp(10), 0, 0, 0));
             pills.add(p);

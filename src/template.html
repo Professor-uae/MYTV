@@ -475,6 +475,8 @@
   .wxd.dust{color:#E8B86A}
   .wxsub{margin-top:.55vh;font-size:clamp(12px,1.06vw,21px);font-weight:300;color:var(--dim);white-space:nowrap}
   .wxr:not(:empty)::before{content:'  ·  ';white-space:pre;color:rgba(214,175,107,.7)}
+  .wxx{gap:.4em;flex-wrap:wrap;font-size:.92em;opacity:.9}
+  #wx-hum:not(:empty)::before,#wx-uv:not(:empty)::before{content:'  ·  ';white-space:pre;color:rgba(214,175,107,.7)}
   .wxt:empty,.wxd:empty,.wxr:empty{display:none}
   .rule.l{margin-left:0;margin-right:auto;background:linear-gradient(90deg,var(--gold),rgba(var(--gold-rgb),0))}
   .mk{margin-top:1.2vh;display:flex;justify-content:flex-end;gap:1.6em;white-space:nowrap;
@@ -550,6 +552,7 @@
     <div class="markets">
       <div class="wxline"><span class="wxt" id="wx-temp"></span><span class="wxd" id="wx-desc"></span></div>
       <div class="wxsub"><span id="wx-city">الرياض</span><span class="wxr" id="wx-range"></span></div>
+      <div class="wxsub wxx"><span id="wx-feels"></span><span id="wx-hum"></span><span id="wx-uv"></span></div>
       <div class="rule l"></div>
       <div class="mk">
         <span class="m"><span>تاسي</span><span id="tasi-chg" class="delta" hidden></span></span>
@@ -2839,15 +2842,15 @@ try{ WX = Object.assign(WX, JSON.parse(localStorage.getItem(LS.wx) || '{}')); }c
 const saveWx = () => { try{ localStorage.setItem(LS.wx, JSON.stringify(WX)); }catch(e){} };
 function wxExpire(){
   if(Date.now() - WX.at < WX_STALE_MS) return;
-  ['wx-temp', 'wx-desc', 'wx-range'].forEach(id => { const el = document.getElementById(id); if(el){ setText(el, ''); el.classList.remove('dust'); } });
+  ['wx-temp', 'wx-desc', 'wx-range', 'wx-feels', 'wx-hum', 'wx-uv'].forEach(id => { const el = document.getElementById(id); if(el){ setText(el, ''); el.classList.remove('dust'); } });
 }
 async function loadWeather(){
   const q = `latitude=${CONFIG.latitude}&longitude=${CONFIG.longitude}&timezone=${encodeURIComponent(CONFIG.timezone)}`;
   try{
     // the hours card asks in the same request: its hourly values, and sunrise and sunset for the day or night icon
     const hours = USES('hourly');
-    const r = await fetchT(`https://api.open-meteo.com/v1/forecast?${q}&current=temperature_2m,weather_code`
-                         + `&daily=temperature_2m_max,temperature_2m_min,weather_code${hours ? ',sunrise,sunset' : ''}&forecast_days=5`
+    const r = await fetchT(`https://api.open-meteo.com/v1/forecast?${q}&current=temperature_2m,weather_code,apparent_temperature,relative_humidity_2m`
+                         + `&daily=temperature_2m_max,temperature_2m_min,weather_code,uv_index_max${hours ? ',sunrise,sunset' : ''}&forecast_days=5`
                          + (hours ? '&hourly=temperature_2m,weather_code' : ''), 12000);
     if(!r.ok) throw 0;
     const j = await r.json();
@@ -2859,6 +2862,11 @@ async function loadWeather(){
     const hi = j.daily?.temperature_2m_max?.[0], lo = j.daily?.temperature_2m_min?.[0];
     setText(document.getElementById('wx-range'),
       (hi != null && lo != null) ? `${ar(Math.round(hi))}° / ${ar(Math.round(lo))}°` : '');
+    // feels like, humidity, and the day's UV index, under the range
+    const c = j.current || {}, uv = j.daily?.uv_index_max?.[0];
+    setText(document.getElementById('wx-feels'), c.apparent_temperature != null ? 'محسوسة ' + ar(Math.round(c.apparent_temperature)) + '°' : '');
+    setText(document.getElementById('wx-hum'), c.relative_humidity_2m != null ? 'رطوبة ' + ar(Math.round(c.relative_humidity_2m)) + '%' : '');
+    setText(document.getElementById('wx-uv'), uv != null ? 'UV ' + ar(Math.round(uv)) : '');
     const dl = j.daily || {};
     FORECAST = (dl.time || []).map((t, i) => ({date:t, code:dl.weather_code?.[i],
       hi:dl.temperature_2m_max?.[i], lo:dl.temperature_2m_min?.[i]})).filter(x => x.hi != null && x.lo != null);

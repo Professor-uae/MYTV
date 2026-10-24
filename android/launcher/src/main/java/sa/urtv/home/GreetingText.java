@@ -23,7 +23,7 @@ final class GreetingText {
             case MORNING: return "صباح الخير عائلة الحضرمي";
             case DAY: return "طاب يومك";
             case EVENING: return "مساء الخير عائلة الحضرمي";
-            default: return "تصبح على خير عائلة الحضرمي";
+            default: return "تصبحون على خير عائلة الحضرمي";
         }
     }
 

@@ -61,7 +61,7 @@ public class SettingsActivity extends Activity {
         FrameLayout root = new FrameLayout(this);
         root.setBackgroundColor(0xFF040E09);
         root.setLayoutDirection(View.LAYOUT_DIRECTION_RTL);
-        Bitmap photo = photo(2);
+        Bitmap photo = null;   // plain background (no photo behind the settings)
         if (photo != null) {
             ImageView bg = new ImageView(this);
             bg.setScaleType(ImageView.ScaleType.CENTER_CROP);
@@ -124,15 +124,16 @@ public class SettingsActivity extends Activity {
         head.addView(sub, sp0);
         list.addView(head);
 
-        row("معاينة الشاشة", "شاهد الشاشة الآن", R.drawable.ic_play, new Runnable() { public void run() {
-            startActivity(new Intent(SettingsActivity.this, MainActivity.class)); } }).requestFocus();
         // «الشاشة الرئيسية»: opens the launcher (sa.urtv.home) from here, without the computer
-        row("الشاشة الرئيسية", "افتح شاشة UrTV الرئيسية", R.drawable.ic_play, new Runnable() { public void run() {
+        View homeRow = row("الشاشة الرئيسية", "افتح شاشة UrTV الرئيسية", R.drawable.ic_play, new Runnable() { public void run() {
             try {
                 startActivity(new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME)
                     .setClassName("sa.urtv.home", "sa.urtv.home.MainActivity")
                     .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
             } catch (Exception e) { toast("تطبيق الشاشة الرئيسية غير مثبت"); } } });
+        homeRow.requestFocus();
+        row("معاينة الشاشة", "شاهد الشاشة الآن", R.drawable.ic_play, new Runnable() { public void run() {
+            startActivity(new Intent(SettingsActivity.this, MainActivity.class)); } });
 
         header("الموقع");
         row("المدينة", prefs.city()[0], R.drawable.ic_place, new Runnable() { public void run() { pickCity(); } });

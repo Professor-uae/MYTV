@@ -3,6 +3,7 @@ package sa.urtv.home;
 import android.animation.ArgbEvaluator;
 import android.animation.ValueAnimator;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -419,7 +420,11 @@ public class MainActivity extends Activity {
         sleepPill.setOnClickListener(v -> showSleep(v));
         // «خروج»: UrTV is the home screen, so leaving it means choosing another one; this opens the TV's home-app chooser
         Pill exit = pill("خروج", R.drawable.ic_stop);
-        exit.setOnClickListener(v -> openOtherHome());
+        exit.setOnClickListener(v -> new AlertDialog.Builder(this)
+            .setTitle("الخروج من UrTV؟")
+            .setMessage("سيفتح جهاز التلفزيون شاشته الأصلية")
+            .setPositiveButton("نعم، اخرج", (d, w) -> openOtherHome())
+            .setNegativeButton("إلغاء", null).show());
         List<Pill> row = new ArrayList<>(Arrays.asList(inputs, wifiPill, settings, sleepPill));
         if (isInstalled(SAVER_PKG)) { row.add(tasks); row.add(saver); }
         if (getResources().getBoolean(R.bool.show_listening)) row.add(tilawah);

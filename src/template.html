@@ -2201,7 +2201,7 @@ function todayCard(){
     const p = riyadhParts(), mins = p.h * 60 + p.mi + p.s / 60;
     let n = PRAYERS.find(x => x.h * 60 + x.mi > mins), tomorrow = false;
     if(!n){ n = PRAYERS[0]; tomorrow = true; }
-    rows.push(tdRow('الصلاة القادمة', `${prayerName(n)} · ${fmt12(n.h, n.mi)}`, 'بعد ' + shortHM(Math.max(0, Math.round((n.h * 60 + n.mi + (tomorrow ? 1440 : 0) - mins) * 60)))));
+    rows.push(tdRow('الصلاة القادمة', `${prayerName(n)} · ${fmt12(n.h, n.mi).replace(/ [صم]$/, '')}`, 'بعد ' + shortHM(Math.max(0, Math.round((n.h * 60 + n.mi + (tomorrow ? 1440 : 0) - mins) * 60)))));
   }
   const g = nextFollowedGame(now);
   if(g){

@@ -17,7 +17,9 @@ final class Ui {
     static Typeface font(Context c, String file) {
         Typeface cached = FONTS.get(file);
         if (cached != null) return cached;
-        Typeface made = Typeface.createFromAsset(c.getAssets(), "fonts/" + file);
+        Typeface made;
+        try { made = Typeface.createFromAsset(c.getAssets(), "fonts/" + file); }
+        catch (RuntimeException e) { made = Typeface.create("sans-serif", Typeface.NORMAL); }   // the owner's private font is not in this build: the system font shows Arabic too
         FONTS.put(file, made);
         return made;
     }

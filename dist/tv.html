@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <!-- the build: UTC time (YYYYMMDDHHMMSS) of the newest commit of the page's sources, put in by src/build.py. The app loads the page with the newer stamp (its own
      copy or a downloaded one), never by file time, and does not keep a download whose stamp is older than its own (Updater, PageStamp). -->
-<meta name="urtv-build" content="20261024183035">
+<meta name="urtv-build" content="20261024191618">
 <title>شاشة تلفزيونك</title>
 <style>
   @font-face{font-family:'Thmanyah';font-weight:300;font-style:normal;font-display:block;src:url("https://raw.githubusercontent.com/Professor-uae/MYTV/master/assets/fonts/Thmanyah-Light.woff2") format("woff2")}
@@ -33,6 +33,9 @@
   /* text size (#textsize=large|xlarge; normal is the plain default): scales the text, not the layout */
   html.size-large{--tz:1.2}
   html.size-xlarge{--tz:1.4}
+  /* Amiri (SIL Open Font Licence, assets/fonts/Amiri-OFL.txt), loaded from the repo; the system's Naskh is the offline fallback */
+  @font-face{font-family:'Amiri';font-weight:400;font-style:normal;font-display:swap;src:url('https://raw.githubusercontent.com/Professor-uae/MYTV/master/assets/fonts/Amiri-Regular-arabic.woff2') format('woff2')}
+  html.font-amiri *:not(.orn):not(.saw):not(.qt){font-family:'Amiri','Noto Naskh Arabic',serif !important}
   /* font (#font=naskh; the Thmanyah default): the system's Naskh face, which Android TVs carry */
   html.font-naskh *:not(.orn):not(.saw):not(.qt){font-family:'Noto Naskh Arabic','Amiri',serif !important}   /* the Quran and the ornaments keep their faces */
   /* colour themes (#theme=green|silver|blue; gold is the plain default): the accents of lines and labels */
@@ -671,7 +674,7 @@ const CONFIG = {
   theme: (v => ['green','silver','blue'].includes(v) ? v : 'gold')(_Q.get('theme')),
   // the text: #textsize=large|xlarge (normal = plain) and #font=naskh (Thmanyah = plain)
   textSize: (v => ['large','xlarge'].includes(v) ? v : 'normal')(_Q.get('textsize')),
-  font: (v => v === 'naskh' ? 'naskh' : 'thmanyah')(_Q.get('font')),
+  font: (v => ['naskh','amiri'].includes(v) ? v : 'thmanyah')(_Q.get('font')),
   // the markets at the top left: #markets=tasi,spx,btc (up to 4 of tasi aramco spx btc gold silver xrp; anything else = the default)
   // and #mkstyle=arrows (a ▲/▼ only, the default) or prices (the price and the day's change)
   markets: (l => l.length ? l : ['tasi','spx','btc'])(
@@ -707,6 +710,7 @@ const CONFIG = {
 if(CONFIG.theme !== 'gold') document.documentElement.classList.add('theme-' + CONFIG.theme);   // the colour theme: the CSS above
 if(CONFIG.textSize !== 'normal') document.documentElement.classList.add('size-' + CONFIG.textSize);
 if(CONFIG.font === 'naskh') document.documentElement.classList.add('font-naskh');
+if(CONFIG.font === 'amiri') document.documentElement.classList.add('font-amiri');
 // The cards on this page: the screensaver's one (#panel=); the launcher's up to three (#home_panel=a,b,c, none or empty = no card;
 // an older launcher sends the one card as #panel=). Each kind once, in order.
 CONFIG.cards = (CONFIG.widget && _Q.has('home_panel') ? _list('home_panel') : [CONFIG.panel])

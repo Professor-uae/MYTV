@@ -218,7 +218,7 @@ final class Prefs {
     static final String[][] THEMES = {{"gold", "ذهبي"}, {"green", "أخضر"}, {"silver", "فضي"}, {"blue", "أزرق"}};
 
     // the text (sent to the page as #font= and #textsize=): thmanyah is the plain face; normal the plain size
-    static final String[][] FONTS = {{"thmanyah", "ثمانية (الافتراضي)"}, {"naskh", "نسخي"}};
+    static final String[][] FONTS = {{"thmanyah", "ثمانية (الافتراضي)"}, {"naskh", "نسخي"}, {"amiri", "أميري"}};
     static final String[][] TEXT_SIZES = {{"normal", "عادي"}, {"large", "كبير"}, {"xlarge", "كبير جداً"}};
 
     static final String[][] CARD_STYLE_ABOUT = {

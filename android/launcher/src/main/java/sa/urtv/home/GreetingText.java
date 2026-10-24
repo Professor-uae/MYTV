@@ -20,9 +20,9 @@ final class GreetingText {
 
     static String greeting(int part) {
         switch (part) {
-            case MORNING: return "صباح الخير";
+            case MORNING: return "صباح الخير عائلة الحضرمي";
             case DAY: return "طاب يومك";
-            case EVENING: return "مساء الخير";
+            case EVENING: return "مساء الخير عائلة الحضرمي";
             default: return "تصبح على خير";
         }
     }

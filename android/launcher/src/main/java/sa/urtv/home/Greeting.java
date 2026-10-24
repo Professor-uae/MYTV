@@ -47,13 +47,13 @@ final class Greeting {
     void update(int hour, ConfigSnapshot snap) {
         Config s = Config.of(snap);
         if (!s.on) {
-            greeting.setText(hour < 4 ? "تصبح على خير" : hour < 12 ? "صباح الخير" : "مساء الخير");
+            greeting.setText(hour < 4 ? "تصبح على خير" : hour < 12 ? "صباح الخير عائلة الحضرمي" : "مساء الخير عائلة الحضرمي");
             weather.setVisibility(android.view.View.GONE);
             return;
         }
         DayParts d = null;
         try { d = DayParts.now(context, snap.fragment); } catch (RuntimeException ignored) { }
-        greeting.setText(d == null ? (hour < 4 ? "تصبح على خير" : hour < 12 ? "صباح الخير" : "مساء الخير")
+        greeting.setText(d == null ? (hour < 4 ? "تصبح على خير" : hour < 12 ? "صباح الخير عائلة الحضرمي" : "مساء الخير عائلة الحضرمي")
                 : GreetingText.greeting(GreetingText.part(System.currentTimeMillis(), d.fajr, d.dhuhr, d.asr, d.isha)));
 
         SharedPreferences sp = prefs();

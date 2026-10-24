@@ -3060,7 +3060,7 @@ function applyBackground(force){
     // what rotates: ours (the hosted set, else the bundled photos once the owner has some), then the owner's; only = theirs alone
     let pool = own;
     if(!only){
-      const ours = set.length ? set.map(b => ({url: PHOTO_BASE + b.f, b})) : own.length ? BGS.map(b => ({url: b.u, b, bundled: true})) : [];
+      const ours = set.length ? set.map(b => ({url: b.u || PHOTO_BASE + b.f, b})) : own.length ? BGS.map(b => ({url: b.u, b, bundled: true})) : [];
       pool = ours.concat(own);
     }
     if(!pool.length){ showBackground(local.u, local); return; }
@@ -3077,7 +3077,7 @@ function applyBackground(force){
     img.onerror = () => { clearTimeout(t); fallback(); done = true; };
     img.src = url;
     // fetch the rest of the set once, quietly, so the app has each one on disk before its turn
-    if(!PREFETCHED && set.length){ PREFETCHED = true; setTimeout(() => set.forEach(x => { new Image().src = PHOTO_BASE + x.f; }), 20000); }
+    if(!PREFETCHED && set.length){ PREFETCHED = true; setTimeout(() => set.forEach(x => { new Image().src = x.u || PHOTO_BASE + x.f; }), 20000); }
   } catch(e) {}
 }
 
@@ -3197,6 +3197,7 @@ function boot(){
   document.title = 'شاشة تلفزيونك';
   applyBackground(true);
   loadPhotoIndex().then(() => applyBackground(true));
+  periodic(loadPhotoIndex, 5*24*3600*1000);   // the photo list again every 5 days: new photos from the index are used
   setInterval(() => applyBackground(false), 60*1000);
   tickClock(); tickDates(); tickOccasion(); renderSlot();
   loadMarkets();

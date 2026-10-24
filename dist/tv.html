@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <!-- the build: UTC time (YYYYMMDDHHMMSS) of the newest commit of the page's sources, put in by src/build.py. The app loads the page with the newer stamp (its own
      copy or a downloaded one), never by file time, and does not keep a download whose stamp is older than its own (Updater, PageStamp). -->
-<meta name="urtv-build" content="20261023205413">
+<meta name="urtv-build" content="20261024102902">
 <title>شاشة تلفزيونك</title>
 <style>
   @font-face{font-family:'Thmanyah';font-weight:300;font-style:normal;font-display:block;src:url("https://raw.githubusercontent.com/Professor-uae/MYTV/master/assets/fonts/Thmanyah-Light.woff2") format("woff2")}
@@ -3064,7 +3064,7 @@ function applyBackground(force){
     // what rotates: ours (the hosted set, else the bundled photos once the owner has some), then the owner's; only = theirs alone
     let pool = own;
     if(!only){
-      const ours = set.length ? set.map(b => ({url: PHOTO_BASE + b.f, b})) : own.length ? BGS.map(b => ({url: b.u, b, bundled: true})) : [];
+      const ours = set.length ? set.map(b => ({url: b.u || PHOTO_BASE + b.f, b})) : own.length ? BGS.map(b => ({url: b.u, b, bundled: true})) : [];
       pool = ours.concat(own);
     }
     if(!pool.length){ showBackground(local.u, local); return; }
@@ -3081,7 +3081,7 @@ function applyBackground(force){
     img.onerror = () => { clearTimeout(t); fallback(); done = true; };
     img.src = url;
     // fetch the rest of the set once, quietly, so the app has each one on disk before its turn
-    if(!PREFETCHED && set.length){ PREFETCHED = true; setTimeout(() => set.forEach(x => { new Image().src = PHOTO_BASE + x.f; }), 20000); }
+    if(!PREFETCHED && set.length){ PREFETCHED = true; setTimeout(() => set.forEach(x => { new Image().src = x.u || PHOTO_BASE + x.f; }), 20000); }
   } catch(e) {}
 }
 
@@ -3201,6 +3201,7 @@ function boot(){
   document.title = 'شاشة تلفزيونك';
   applyBackground(true);
   loadPhotoIndex().then(() => applyBackground(true));
+  periodic(loadPhotoIndex, 5*24*3600*1000);   // the photo list again every 5 days: new photos from the index are used
   setInterval(() => applyBackground(false), 60*1000);
   tickClock(); tickDates(); tickOccasion(); renderSlot();
   loadMarkets();

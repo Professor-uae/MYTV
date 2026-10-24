@@ -217,6 +217,10 @@ final class Prefs {
     // colour of the lines and labels (sent to the page as #theme=; gold is the plain default)
     static final String[][] THEMES = {{"gold", "ذهبي"}, {"green", "أخضر"}, {"silver", "فضي"}, {"blue", "أزرق"}};
 
+    // the text (sent to the page as #font= and #textsize=): thmanyah is the plain face; normal the plain size
+    static final String[][] FONTS = {{"thmanyah", "ثمانية (الافتراضي)"}, {"naskh", "نسخي"}};
+    static final String[][] TEXT_SIZES = {{"normal", "عادي"}, {"large", "كبير"}, {"xlarge", "كبير جداً"}};
+
     static final String[][] CARD_STYLE_ABOUT = {
         {"current", "البطاقة كما كانت، بخلفية داكنة شفافة"},
         {"dark1", "داكنة بزوايا مدوّرة وخط ذهبي على جهة الساعة"},
@@ -297,6 +301,19 @@ final class Prefs {
 
     String cardStyle() { return sp.getString("cardStyle", "current"); }
     void setCardStyle(String v) { sp.edit().putString("cardStyle", v).apply(); }
+
+    String font() { return sp.getString("font", "thmanyah"); }
+    void setFont(String v) { sp.edit().putString("font", v).apply(); }
+    static String fontLabel(String v) {
+        for (String[] c : FONTS) if (c[0].equals(v)) return c[1];
+        return FONTS[0][1];
+    }
+    String textSize() { return sp.getString("textsize", "normal"); }
+    void setTextSize(String v) { sp.edit().putString("textsize", v).apply(); }
+    static String textSizeLabel(String v) {
+        for (String[] c : TEXT_SIZES) if (c[0].equals(v)) return c[1];
+        return TEXT_SIZES[0][1];
+    }
 
     String theme() { return sp.getString("theme", "gold"); }
     void setTheme(String v) { sp.edit().putString("theme", v).apply(); }
@@ -392,6 +409,8 @@ final class Prefs {
             + "&digits=" + digits()
             + "&cardstyle=" + cardStyle()
             + "&theme=" + theme()
+            + "&font=" + font()
+            + "&textsize=" + textSize()
             + "&adhanbar=" + (adhanBar() ? "1" : "0")
             + "&yearstrip=" + (yearStrip() ? "1" : "0")
             + PrayerAdj.fragment(prayerAdjOn(), prayerAdj())

@@ -28,6 +28,11 @@
     --green-lt:#57D294;
     --red:#EE6A50;
   }
+  /* text size (#textsize=large|xlarge; normal is the plain default): scales the text, not the layout */
+  html.size-large{--tz:1.2}
+  html.size-xlarge{--tz:1.4}
+  /* font (#font=naskh; the Thmanyah default): the system's Naskh face, which Android TVs carry */
+  html.font-naskh *:not(.orn):not(.saw):not(.qt){font-family:'Noto Naskh Arabic','Amiri',serif !important}   /* the Quran and the ornaments keep their faces */
   /* colour themes (#theme=green|silver|blue; gold is the plain default): the accents of lines and labels */
   html.theme-green{--gold:#7FD1A8;--gold-2:#6BC597;--gold-3:#93DDB7;--gold-hi:#D8F6E6;--gold-rgb:127,209,168}
   html.theme-silver{--gold:#D5DBE3;--gold-2:#C3CAD4;--gold-3:#E1E6EC;--gold-hi:#FFFFFF;--gold-rgb:213,219,227}
@@ -116,13 +121,13 @@
   }
   .week .hd{
     display:flex;align-items:center;gap:.7em;margin-bottom:1vh;
-    font-size:calc(clamp(12px,1vw,18px)*var(--z,1));font-weight:500;letter-spacing:.18em;color:var(--gold-2);
+    font-size:calc(clamp(12px,1vw,18px)*var(--z,1)*var(--tz,1));font-weight:500;letter-spacing:.18em;color:var(--gold-2);
   }
   .week .hd::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,rgba(var(--gold-rgb),.5),transparent)}
   .week ul{list-style:none;display:flex;flex-direction:column;gap:0}
   .week li{
     display:flex;align-items:baseline;gap:1.05em;
-    font-size:calc(clamp(14px,1.16vw,22px)*var(--z,1));font-weight:400;color:#F6EEDC;
+    font-size:calc(clamp(14px,1.16vw,22px)*var(--z,1)*var(--tz,1));font-weight:400;color:#F6EEDC;
     white-space:nowrap;line-height:1.3;
     padding:.8vh 0;border-bottom:1px solid rgba(var(--gold-rgb),.13);
   }
@@ -160,7 +165,7 @@
   .week ul.pgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:calc(1.2vh + 6px) calc(.9vw + 6px);padding:calc(.5vh + 2px) 0 calc(.3vh + 2px)}
   .week ul.pgrid li{flex-direction:column;align-items:center;justify-content:center;gap:.3em;white-space:nowrap;text-align:center;
     padding:calc(1.7vh + 6px) .5em;border:1px solid rgba(var(--gold-rgb),.24);border-radius:calc(10px + .5vw);background:rgba(255,255,255,.045);
-    font-size:calc(clamp(18px,1.7vw,32px)*var(--z,1))}
+    font-size:calc(clamp(18px,1.7vw,32px)*var(--z,1)*var(--tz,1))}
   .week ul.pgrid li:last-child{border-bottom:1px solid rgba(var(--gold-rgb),.24)}
   .week ul.pgrid li span:first-child{max-width:none;overflow:visible;padding:0;margin:0;font-weight:500}
   .week ul.pgrid li .dt{flex:none;min-width:0;text-align:center;font-size:.82em;color:#CFC5AD;font-variant-numeric:tabular-nums}
@@ -187,7 +192,7 @@
   .week li.lv{display:block;white-space:normal;text-align:center;border-bottom:none;padding:.5vh 0 .2vh}
   .week li.lv .lvm{font-size:.8em;color:#E6DCC4;margin-bottom:.35em}
   .week li.lv .lvt{display:flex;align-items:center;justify-content:center;gap:.55em;white-space:nowrap;overflow:hidden;
-    font-size:calc(clamp(21px,2vw,38px)*var(--z,1)*var(--k,1));font-weight:500;line-height:1.35}
+    font-size:calc(clamp(21px,2vw,38px)*var(--z,1)*var(--tz,1)*var(--k,1));font-weight:500;line-height:1.35}
   .week li.lv .lvt > *{flex:0 0 auto}   /* nothing shrinks: what does not fit is measured and stepped down (fitLive) */
   .week li.lv .lvt .tm{display:inline-flex;align-items:center}
   .week li.lv .lvt .tm .cr{flex:0 0 auto}
@@ -203,7 +208,7 @@
   .week li.past{color:#8F8670}
   .week li.next{color:var(--gold-hi)}
   .week li.next .dt{color:var(--gold-3)}
-  .week li.quote{white-space:normal;display:block;font-size:calc(clamp(17px,1.5vw,29px)*var(--z,1));line-height:1.75;
+  .week li.quote{white-space:normal;display:block;font-size:calc(clamp(17px,1.5vw,29px)*var(--z,1)*var(--tz,1));line-height:1.75;
     border-bottom:none;padding:.4vh 0 0;color:#FFF7E6}
   /* Thmanyah draws ﴿﴾ as small angle marks: they come from the NotoMarks subset */
   .week li.quote .orn{font-family:'NotoMarks','Noto Naskh Arabic',serif;color:var(--gold-2);
@@ -213,25 +218,25 @@
   /* the Uthmanic Hafs face is small for its size and its marks stack high: larger, with more leading */
   .week li.quote .qt{font-family:'UthmanicHafs','Thmanyah',serif;font-size:1.32em}
   .week li.quote.quran{line-height:1.95}
-  .week li.quote.quran.q1{font-size:calc(clamp(13px,1.3vw,25px)*var(--z,1));line-height:1.85}   /* the Hafs face is wide: a lower floor than the other cards' */
+  .week li.quote.quran.q1{font-size:calc(clamp(13px,1.3vw,25px)*var(--z,1)*var(--tz,1));line-height:1.85}   /* the Hafs face is wide: a lower floor than the other cards' */
   .week li.quote.quran.q2{line-height:1.8}
   .week li.quote.quran.q3,.week li.quote.quran.q4{line-height:1.55}   /* the longest verses, on the smallest screens, must still fit the card */
   /* «التفسير الميسر» under the verse (#tafsir=1): small and dim, three lines at most (fitTafsir) */
   .week li.tafsir{white-space:normal;display:block;border-bottom:none;padding:.5vh 0 0;line-height:1.65;
-    font-size:calc(clamp(11px,.92vw,17px)*var(--z,1));color:#B9AE96}
+    font-size:calc(clamp(11px,.92vw,17px)*var(--z,1)*var(--tz,1));color:#B9AE96}
   /* a full hadith: the isnad and the narration small and muted, the Prophet's words ﷺ at full size */
-  .week li.quote.hadith{font-size:calc(clamp(15px,1.3vw,25px)*var(--z,1));line-height:1.7}
+  .week li.quote.hadith{font-size:calc(clamp(15px,1.3vw,25px)*var(--z,1)*var(--tz,1));line-height:1.7}
   /* long texts a step smaller (by length, see quoteSize()), so the card never grows past the clock row */
-  .week li.quote.q1{font-size:calc(clamp(15px,1.3vw,25px)*var(--z,1))}
-  .week li.quote.q2{font-size:calc(clamp(14px,1.16vw,22px)*var(--z,1))}
-  .week li.quote.q3{font-size:calc(clamp(13px,1.04vw,20px)*var(--z,1))}
-  .week li.quote.q4{font-size:calc(clamp(11px,.88vw,17px)*var(--z,1))}   /* the adhkar card's longest, the end of al-Baqara with harakat */
-  .week li.quote.hadith.q1{font-size:calc(clamp(14px,1.16vw,22px)*var(--z,1))}
-  .week li.quote.hadith.q2{font-size:calc(clamp(13px,1.04vw,20px)*var(--z,1))}
-  .week li.quote.hadith.q3{font-size:calc(clamp(12px,.94vw,18px)*var(--z,1))}
+  .week li.quote.q1{font-size:calc(clamp(15px,1.3vw,25px)*var(--z,1)*var(--tz,1))}
+  .week li.quote.q2{font-size:calc(clamp(14px,1.16vw,22px)*var(--z,1)*var(--tz,1))}
+  .week li.quote.q3{font-size:calc(clamp(13px,1.04vw,20px)*var(--z,1)*var(--tz,1))}
+  .week li.quote.q4{font-size:calc(clamp(11px,.88vw,17px)*var(--z,1)*var(--tz,1))}   /* the adhkar card's longest, the end of al-Baqara with harakat */
+  .week li.quote.hadith.q1{font-size:calc(clamp(14px,1.16vw,22px)*var(--z,1)*var(--tz,1))}
+  .week li.quote.hadith.q2{font-size:calc(clamp(13px,1.04vw,20px)*var(--z,1)*var(--tz,1))}
+  .week li.quote.hadith.q3{font-size:calc(clamp(12px,.94vw,18px)*var(--z,1)*var(--tz,1))}
   .week li.quote .nar{font-size:.66em;color:#B9AE96}
   .week li.quote .nar .saw{font-size:1.45em}
-  .week li.src{border-bottom:none;padding:.6vh 0 0;font-size:calc(clamp(12px,.95vw,18px)*var(--z,1));color:var(--gold-2)}
+  .week li.src{border-bottom:none;padding:.6vh 0 0;font-size:calc(clamp(12px,.95vw,18px)*var(--z,1)*var(--tz,1));color:var(--gold-2)}
   /* «أذكار الصباح والمساء»: the header takes a line icon and the window's end; the footer holds source, count and dots */
   .week .hd::after{order:1}
   .week .hd svg{flex:0 0 auto;width:1.5em;height:1.5em;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
@@ -247,7 +252,7 @@
   .week li.stk .up{color:#79D6A0}
   .week li.stk .down{color:#EE8B70}
   .week li.adf{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:.8em;align-items:center;
-    border-bottom:none;padding:.6vh 0 0;font-size:calc(clamp(12px,.95vw,18px)*var(--z,1));color:var(--gold-2)}
+    border-bottom:none;padding:.6vh 0 0;font-size:calc(clamp(12px,.95vw,18px)*var(--z,1)*var(--tz,1));color:var(--gold-2)}
   .week li.adf .s{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-bottom:.3em;margin-bottom:-.3em}
   .week li.adf .c{color:#B9AE96;font-size:.92em;white-space:nowrap}
   .week li.adf .d{justify-self:end;display:flex;gap:.4em}
@@ -267,7 +272,7 @@
     .week li.yr.fill .r{animation:yrIn .7s ease both;animation-delay:calc(var(--i) * 70ms)}
     @keyframes yrIn{from{opacity:0}to{opacity:1}}
   }
-  .week .empty{color:#9A9078;font-size:calc(clamp(14px,1.1vw,21px)*var(--z,1));font-weight:300;margin-top:1vh}
+  .week .empty{color:#9A9078;font-size:calc(clamp(14px,1.1vw,21px)*var(--z,1)*var(--tz,1));font-weight:300;margin-top:1vh}
 
   /* ===== card styles (#cardstyle=; the default keeps the plain card above) =====
      The blur is never a live backdrop-filter: a pre-blurred copy of the photo is drawn once per photo
@@ -658,6 +663,9 @@ const CONFIG = {
   cardStyle: (v => ['dark1','glass1','dark3','glass3'].includes(v) ? v : 'current')(_Q.get('cardstyle')),
   // the colour of the lines and labels: #theme=gold|green|silver|blue (gold = the plain default)
   theme: (v => ['green','silver','blue'].includes(v) ? v : 'gold')(_Q.get('theme')),
+  // the text: #textsize=large|xlarge (normal = plain) and #font=naskh (Thmanyah = plain)
+  textSize: (v => ['large','xlarge'].includes(v) ? v : 'normal')(_Q.get('textsize')),
+  font: (v => v === 'naskh' ? 'naskh' : 'thmanyah')(_Q.get('font')),
   // the markets at the top left: #markets=tasi,spx,btc (up to 4 of tasi aramco spx btc gold silver xrp; anything else = the default)
   // and #mkstyle=arrows (a ▲/▼ only, the default) or prices (the price and the day's change)
   markets: (l => l.length ? l : ['tasi','spx','btc'])(
@@ -691,6 +699,8 @@ const CONFIG = {
   iqamaFull: _Q.get('iqamafull') !== '0',
 };
 if(CONFIG.theme !== 'gold') document.documentElement.classList.add('theme-' + CONFIG.theme);   // the colour theme: the CSS above
+if(CONFIG.textSize !== 'normal') document.documentElement.classList.add('size-' + CONFIG.textSize);
+if(CONFIG.font === 'naskh') document.documentElement.classList.add('font-naskh');
 // The cards on this page: the screensaver's one (#panel=); the launcher's up to three (#home_panel=a,b,c, none or empty = no card;
 // an older launcher sends the one card as #panel=). Each kind once, in order.
 CONFIG.cards = (CONFIG.widget && _Q.has('home_panel') ? _list('home_panel') : [CONFIG.panel])

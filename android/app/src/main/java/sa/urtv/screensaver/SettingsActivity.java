@@ -170,6 +170,10 @@ public class SettingsActivity extends Activity {
         row("المحتوى", Prefs.panelLabel(prefs.panel()), R.drawable.ic_eye, new Runnable() { public void run() { pickPanel(-1); } });
         row("الألوان", Prefs.themeLabel(prefs.theme()), R.drawable.ic_eye,
             new Runnable() { public void run() { pickTheme(); } });
+        row("الخط", Prefs.fontLabel(prefs.font()), R.drawable.ic_eye,
+            new Runnable() { public void run() { pickFont(); } });
+        row("حجم النص", Prefs.textSizeLabel(prefs.textSize()), R.drawable.ic_eye,
+            new Runnable() { public void run() { pickTextSize(); } });
         row("شكل البطاقة", Prefs.cardStyleLabel(prefs.cardStyle()), R.drawable.ic_eye,
             new Runnable() { public void run() { pickCardStyle(); } });
 
@@ -749,6 +753,30 @@ public class SettingsActivity extends Activity {
         }
         new Dlg(this).setTitle("الألوان: الخطوط والنص")
             .setSingleChoiceItems(labels, sel, (d, i) -> { prefs.setTheme(Prefs.THEMES[i][0]); d.dismiss(); render(); })
+            .setNegativeButton("إلغاء", null).show();
+    }
+
+    private void pickFont() {
+        String[] labels = new String[Prefs.FONTS.length];
+        int sel = 0;
+        for (int i = 0; i < labels.length; i++) {
+            labels[i] = Prefs.FONTS[i][1];
+            if (Prefs.FONTS[i][0].equals(prefs.font())) sel = i;
+        }
+        new Dlg(this).setTitle("الخط")
+            .setSingleChoiceItems(labels, sel, (d, i) -> { prefs.setFont(Prefs.FONTS[i][0]); d.dismiss(); render(); })
+            .setNegativeButton("إلغاء", null).show();
+    }
+
+    private void pickTextSize() {
+        String[] labels = new String[Prefs.TEXT_SIZES.length];
+        int sel = 0;
+        for (int i = 0; i < labels.length; i++) {
+            labels[i] = Prefs.TEXT_SIZES[i][1];
+            if (Prefs.TEXT_SIZES[i][0].equals(prefs.textSize())) sel = i;
+        }
+        new Dlg(this).setTitle("حجم النص")
+            .setSingleChoiceItems(labels, sel, (d, i) -> { prefs.setTextSize(Prefs.TEXT_SIZES[i][0]); d.dismiss(); render(); })
             .setNegativeButton("إلغاء", null).show();
     }
 

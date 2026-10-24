@@ -12,18 +12,20 @@ permissions:
 jobs:
   apk:
     runs-on: ubuntu-latest
+    env:
+      HAS_FONTS: ${{ secrets.FONTS_TOKEN != '' }}   # the secrets context cannot be used in an if: directly
     steps:
       - uses: actions/checkout@v4
       # Thmanyah's licence allows its files only inside a built product: they live in the private
       # tshi-dev/urtv-fonts and are put in place here, never committed to this repository
       - uses: actions/checkout@v4
-        if: ${{ secrets.FONTS_TOKEN != '' }}   # only when the owner's private fonts are available; otherwise the page uses the fallback fonts
+        if: env.HAS_FONTS == 'true'   # only when the owner's private fonts are available; otherwise the page uses the fallback fonts
         with:
           repository: tshi-dev/urtv-fonts
           token: ${{ secrets.FONTS_TOKEN }}
           path: .fonts-private
       - name: Private fonts
-        if: ${{ secrets.FONTS_TOKEN != '' }}
+        if: env.HAS_FONTS == 'true'
         run: |
           cp .fonts-private/web/*.woff2 assets/fonts/
           mkdir -p android/launcher/src/main/assets/fonts

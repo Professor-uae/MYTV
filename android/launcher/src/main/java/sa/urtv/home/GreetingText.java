@@ -18,12 +18,16 @@ final class GreetingText {
         return NIGHT;
     }
 
-    static String greeting(int part) {
+    static final String FAMILY_DEFAULT = "عائلة الحضرمي";
+
+    static String greeting(int part) { return greeting(part, FAMILY_DEFAULT); }
+
+    static String greeting(int part, String family) {
         switch (part) {
-            case MORNING: return "صباح الخير عائلة الحضرمي";
-            case DAY: return "طاب يومكم عائلة الحضرمي";
-            case EVENING: return "مساء الخير عائلة الحضرمي";
-            default: return "تصبحون على خير عائلة الحضرمي";
+            case MORNING: return "صباح الخير " + family;
+            case DAY: return "طاب يومكم " + family;
+            case EVENING: return "مساء الخير " + family;
+            default: return "تصبحون على خير " + family;
         }
     }
 

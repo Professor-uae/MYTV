@@ -217,6 +217,8 @@ public class SettingsActivity extends Activity {
         }
         row("التحية والطقس", prefs.greeting() ? "تعمل" : "متوقفة", R.drawable.ic_eye,
             new Runnable() { public void run() { prefs.setGreeting(!prefs.greeting()); render(); } });
+        row("اسم العائلة في التحية", prefs.family(), R.drawable.ic_eye,
+            new Runnable() { public void run() { askFamily(); } });
         row("ترتيب التطبيقات المفضلة", "قائمة ترتّب فيها المفضلة بالأسهم", R.drawable.ic_star,
             new Runnable() { public void run() { openDockSettings(); } });
 
@@ -1214,6 +1216,18 @@ public class SettingsActivity extends Activity {
         lp.bottomMargin = dp(9);
         list.addView(card, lp);
         return card;
+    }
+
+    /** «اسم العائلة»: the words the greetings end with, edited in a box (empty = the default). */
+    private void askFamily() {
+        final EditText in = new EditText(this);
+        in.setSingleLine(true);
+        in.setText(prefs.family());
+        in.setSelection(in.getText().length());
+        new Dlg(this).setTitle("اسم العائلة في التحية").setView(in)
+            .setPositiveButton("حفظ", (d, w) -> { prefs.setFamily(in.getText().toString()); render(); })
+            .setNegativeButton("إلغاء", null).show();
+        in.requestFocus();
     }
 
     interface Text { void got(String s); }

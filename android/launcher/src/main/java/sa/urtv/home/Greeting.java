@@ -47,14 +47,14 @@ final class Greeting {
     void update(int hour, ConfigSnapshot snap) {
         Config s = Config.of(snap);
         if (!s.on) {
-            greeting.setText(hour < 4 ? "تصبحون على خير عائلة الحضرمي" : hour < 12 ? "صباح الخير عائلة الحضرمي" : "مساء الخير عائلة الحضرمي");
+            greeting.setText(hour < 4 ? "تصبحون على خير " + s.family : hour < 12 ? "صباح الخير " + s.family : "مساء الخير " + s.family);
             weather.setVisibility(android.view.View.GONE);
             return;
         }
         DayParts d = null;
         try { d = DayParts.now(context, snap.fragment); } catch (RuntimeException ignored) { }
-        greeting.setText(d == null ? (hour < 4 ? "تصبحون على خير عائلة الحضرمي" : hour < 12 ? "صباح الخير عائلة الحضرمي" : "مساء الخير عائلة الحضرمي")
-                : GreetingText.greeting(GreetingText.part(System.currentTimeMillis(), d.fajr, d.dhuhr, d.asr, d.isha)));
+        greeting.setText(d == null ? (hour < 4 ? "تصبحون على خير " + s.family : hour < 12 ? "صباح الخير " + s.family : "مساء الخير " + s.family)
+                : GreetingText.greeting(GreetingText.part(System.currentTimeMillis(), d.fajr, d.dhuhr, d.asr, d.isha), s.family));
 
         SharedPreferences sp = prefs();
         long at = sp.getLong("at", 0);
@@ -146,6 +146,7 @@ final class Greeting {
         boolean on = true;   // an older screensaver does not say: on, the default
         String city = "الرياض", lat = "24.6877", lon = "46.7219", tz = "Asia/Riyadh";
         boolean latin;
+        String family = GreetingText.FAMILY_DEFAULT;   // the name the greetings end with (#family=)
 
         static Config of(ConfigSnapshot snap) {
             Config s = new Config();
@@ -158,6 +159,7 @@ final class Greeting {
                     if (eq < 0) continue;
                     String key = part.substring(0, eq), value = URLDecoder.decode(part.substring(eq + 1), "UTF-8");
                     switch (key) {
+                        case "family": if (!value.trim().isEmpty()) s.family = value.trim(); break;
                         case "city": if (!value.trim().isEmpty()) s.city = value.trim().equalsIgnoreCase("Abu Dhabi") ? "أبوظبي" : value.trim(); break;
                         case "lat": if (value.matches("-?\\d+(\\.\\d+)?")) s.lat = value; break;
                         case "lon": if (value.matches("-?\\d+(\\.\\d+)?")) s.lon = value; break;

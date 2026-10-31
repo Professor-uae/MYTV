@@ -396,6 +396,7 @@ final class Prefs {
         for (String s : shows()) ids.add(s.split("\\|", 2)[0]);
         return "city=" + Uri.encode(city[0]) + "&lat=" + city[1] + "&lon=" + city[2]
             + "&tz=" + Uri.encode(cityTz())
+            + "&family=" + Uri.encode(family())
             + "&teams=" + join(teamIds(), ",")
             + "&events=" + join(list("events"), ",")
             + "&leagues=" + Uri.encode(join(leagues(), ","))
@@ -571,6 +572,9 @@ final class Prefs {
 
     /** The greeting and the weather line on the launcher's home screen (default on). Off: the plain good-morning it had. */
     boolean greeting() { return sp.getBoolean("greeting", true); }
+    /** The family name the greetings end with (default «عائلة الحضرمي»); up to 40 characters. */
+    String family() { String f = sp.getString("family", "").trim(); return f.isEmpty() ? "عائلة الحضرمي" : f; }
+    void setFamily(String v) { String f = v == null ? "" : v.trim(); if (f.length() > 40) f = f.substring(0, 40); sp.edit().putString("family", f).apply(); }
     void setGreeting(boolean v) { sp.edit().putBoolean("greeting", v).apply(); }
 
     List<String> teamIds() {

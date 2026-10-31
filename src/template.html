@@ -627,7 +627,7 @@ const _tzOk = z => { try{ new Intl.DateTimeFormat('en',{timeZone:z}); return tru
 // the cards a slot can show (Prefs.PANELS in the app is the same list); «none» is the absence of one
 const CARD_KINDS = ['shows','prayers','forecast','hourly','prayerrow','matches','verse','wisdom','adhkar','stocks','tasks','year','smart','today'];
 const CONFIG = {
-  city: _Q.get('city') || 'الرياض',
+  city: (c => /^abu\s*dhabi$/i.test(c) ? 'أبوظبي' : c)(_Q.get('city') || 'الرياض'),   // the English name the TV may have stored shows in Arabic
   latitude: _num('lat', 24.7136),
   longitude: _num('lon', 46.6753),
   timezone: _tzOk(_Q.get('tz') || 'Asia/Riyadh') ? (_Q.get('tz') || 'Asia/Riyadh') : 'Asia/Riyadh',

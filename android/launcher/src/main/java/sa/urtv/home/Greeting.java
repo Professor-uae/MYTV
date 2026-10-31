@@ -158,7 +158,7 @@ final class Greeting {
                     if (eq < 0) continue;
                     String key = part.substring(0, eq), value = URLDecoder.decode(part.substring(eq + 1), "UTF-8");
                     switch (key) {
-                        case "city": if (!value.trim().isEmpty()) s.city = value.trim(); break;
+                        case "city": if (!value.trim().isEmpty()) s.city = value.trim().equalsIgnoreCase("Abu Dhabi") ? "أبوظبي" : value.trim(); break;
                         case "lat": if (value.matches("-?\\d+(\\.\\d+)?")) s.lat = value; break;
                         case "lon": if (value.matches("-?\\d+(\\.\\d+)?")) s.lon = value; break;
                         case "tz": if (!value.trim().isEmpty()) s.tz = value.trim(); break;

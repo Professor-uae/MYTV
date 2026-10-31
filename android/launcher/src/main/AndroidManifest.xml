@@ -61,7 +61,7 @@
     <application
         android:label="تلفزيونك"
         android:icon="@mipmap/ic_launcher"
-        android:banner="@drawable/banner"
+        android:banner="@drawable/app_banner"
         android:allowBackup="false"
         android:networkSecurityConfig="@xml/network_security_config"
         android:supportsRtl="true"
@@ -227,7 +227,7 @@
         <!-- «ديرة الدرور»: the calendar page, opened from its tile among the apps -->
         <activity
             android:name=".DuroursActivity"
-            android:exported="false"
+            android:exported="true"
             android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen" />
 
 </application>

@@ -57,10 +57,12 @@
   html.widget .stage{height:auto;padding:0;display:block;transition:none}
   /* the launcher's cards, up to three: one fills the box; two side by side (the first on the right, as Arabic reads);
      three: two side by side and the third the full width under them. At 1920 a pair is about 560 + 540 px with a 22 px gap. */
-  html.widget .mid{display:grid;grid-template-columns:minmax(0,1fr);gap:var(--cg,clamp(8px,2vw,22px));align-items:start}
+  html.widget .mid{display:grid;grid-template-columns:minmax(0,1fr);gap:var(--cg,clamp(8px,2vw,22px));align-items:stretch}   /* cards in one row share one height */
+  html.widget .week .hd{margin-bottom:max(1.2vh,8px)}   /* air between a card's title and its rows */
+  html.widget .week{line-height:1.7}   /* the rows breathe: less crowded */
   html.widget .mid.n2,html.widget .mid.n3{grid-template-columns:minmax(0,560fr) minmax(0,540fr)}
   html.widget .mid .week.w3{grid-column:1/-1}
-  html.widget .week{width:100%}
+  html.widget .week{width:100%;box-sizing:border-box}
   html.widget .week.boxes{padding:max(1.7vh,10px) max(1.4vw,14px)}   /* the prayer boxes keep a clear, even distance from the card's edge */
   html,body{
     height:100%;overflow:hidden;background:#040E09;color:var(--sand);

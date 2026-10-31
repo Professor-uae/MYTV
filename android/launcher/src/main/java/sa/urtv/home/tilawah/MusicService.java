@@ -397,7 +397,13 @@ public class MusicService extends Service implements AudioManager.OnAudioFocusCh
 
     private void adhanVolumeBack() {
         if (savedVolume < 0) return;
-        if (audio != null) audio.setStreamVolume(AudioManager.STREAM_MUSIC, savedVolume, 0);
+        if (audio != null) {
+            int max = audio.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
+            // a reading of 0 (the TV reports it when it is muted or on a TV-box link) must not be put back: that would leave the TV silent
+            int back = savedVolume > 0 ? savedVolume : Math.max(1, Math.round(max * 0.4f));
+            audio.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_UNMUTE, 0);
+            audio.setStreamVolume(AudioManager.STREAM_MUSIC, back, 0);
+        }
         savedVolume = -1;
     }
 

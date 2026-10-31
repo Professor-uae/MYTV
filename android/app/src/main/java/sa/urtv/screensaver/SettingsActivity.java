@@ -99,6 +99,7 @@ public class SettingsActivity extends Activity {
     private ScrollView scrollView;      // the list's scroll view, kept across re-renders
     private String focusKey;            // the label of the row that had the focus last
     private boolean firstRender = true;
+    private boolean prayerPage = false;   // the «الصلاة والأذان والتقويم» list is open
 
     @Override
     protected void onResume() {   // back in front (from the TV's settings, or opened again over itself): show what is set now
@@ -122,6 +123,7 @@ public class SettingsActivity extends Activity {
 
     private void render() {
         latinDigits = DigitsText.isLatin(prefs.digits());
+        if (prayerPage) { renderPrayerPage(); return; }
         // coming back from a dialog or a picker: the same row keeps the focus and the list keeps its place
         final int keepY = scrollView != null ? scrollView.getScrollY() : 0;
         final String keepKey = firstRender ? null : focusKey;
@@ -158,8 +160,8 @@ public class SettingsActivity extends Activity {
         row("معاينة الشاشة", "شاهد الشاشة الآن", R.drawable.ic_play, new Runnable() { public void run() {
             startActivity(new Intent(SettingsActivity.this, MainActivity.class)); } });
 
-        header("الموقع");
-        row("المدينة", prefs.city()[0], R.drawable.ic_place, new Runnable() { public void run() { pickCity(); } });
+        row("الصلاة والأذان والتقويم", prayerSummary(), R.drawable.ic_place,
+            new Runnable() { public void run() { prayerPage = true; render(); } });
 
         header("المباريات");
         row("الفرق المتابعة (" + arabicNum(prefs.teams().size()) + "/" + arabicNum(Prefs.MAX_TEAMS) + ")", teamsLabel(),
@@ -176,15 +178,6 @@ public class SettingsActivity extends Activity {
         row("الأرقام", Prefs.digitsLabel(prefs.digits()), R.drawable.ic_language,
             new Runnable() { public void run() { pickDigits(); } });
         noConv = false;
-        row("تنبيه قبل الأذان", prefs.adhanBar() ? "يعمل · شريط في أعلى الشاشة آخر ١٠ دقائق، ثم حتى الإقامة" : "متوقف", R.drawable.ic_eye,
-            new Runnable() { public void run() { prefs.setAdhanBar(!prefs.adhanBar()); render(); } });
-        row("تعديل وقت الصلاة", prefs.prayerAdjOn() ? "يعمل · لكل صلاة دقائقها، من −٢٠ إلى +٢٠ (الشروق لا يتغيّر)" : "متوقف · الأوقات كما تُحسب", R.drawable.ic_eye,
-            new Runnable() { public void run() { prefs.setPrayerAdjOn(!prefs.prayerAdjOn()); render(); } });
-        if (prefs.prayerAdjOn()) for (int k = 0; k < PrayerAdj.COUNT; k++) adjRow(k);
-        row("شريط السنة تحت الساعة", prefs.yearStrip() ? "يعمل · نقاط السنة تحت الساعة، واليوم يلمع" : "متوقف", R.drawable.ic_eye,
-            new Runnable() { public void run() { prefs.setYearStrip(!prefs.yearStrip()); render(); } });
-        row("المناسبات الوطنية", Prefs.nationalLabel(prefs.national()), R.drawable.ic_eye,
-            new Runnable() { public void run() { pickNational(); } });
         row("الخانة اليسرى", Prefs.slotLabel(prefs.slot()), R.drawable.ic_eye,
             new Runnable() { public void run() { pickSlot(); } });
         if ("countdown".equals(prefs.slot()) || !prefs.countdownDate().isEmpty())
@@ -1119,6 +1112,35 @@ public class SettingsActivity extends Activity {
         } catch (Exception | OutOfMemoryError e) {
             return null;
         }
+    }
+
+    /** «الصلاة والأذان والتقويم»: the city, the adhan, the prayer times' changes and the calendar rows, all in one list. */
+    private void renderPrayerPage() {
+        list.removeAllViews();
+        TextView title = new TextView(this);
+        title.setText("الصلاة والأذان والتقويم");
+        title.setTextColor(0xFFF6EFE0);
+        title.setTextSize(TypedValue.COMPLEX_UNIT_SP, 34);
+        title.setTypeface(font("ThmanyahDisplay-Bold"));
+        title.setPadding(0, 0, 0, dp(10));
+        list.addView(title);
+        row("رجوع إلى الإعدادات", "", R.drawable.ic_play, new Runnable() { public void run() { prayerPage = false; render(); } });
+          header("الموقع");
+          row("المدينة", prefs.city()[0], R.drawable.ic_place, new Runnable() { public void run() { pickCity(); } });
+
+          row("تنبيه قبل الأذان", prefs.adhanBar() ? "يعمل · شريط في أعلى الشاشة آخر ١٠ دقائق، ثم حتى الإقامة" : "متوقف", R.drawable.ic_eye,
+              new Runnable() { public void run() { prefs.setAdhanBar(!prefs.adhanBar()); render(); } });
+          row("تعديل وقت الصلاة", prefs.prayerAdjOn() ? "يعمل · لكل صلاة دقائقها، من −٢٠ إلى +٢٠ (الشروق لا يتغيّر)" : "متوقف · الأوقات كما تُحسب", R.drawable.ic_eye,
+              new Runnable() { public void run() { prefs.setPrayerAdjOn(!prefs.prayerAdjOn()); render(); } });
+          if (prefs.prayerAdjOn()) for (int k = 0; k < PrayerAdj.COUNT; k++) adjRow(k);
+          row("شريط السنة تحت الساعة", prefs.yearStrip() ? "يعمل · نقاط السنة تحت الساعة، واليوم يلمع" : "متوقف", R.drawable.ic_eye,
+              new Runnable() { public void run() { prefs.setYearStrip(!prefs.yearStrip()); render(); } });
+          row("المناسبات الوطنية", Prefs.nationalLabel(prefs.national()), R.drawable.ic_eye,
+              new Runnable() { public void run() { pickNational(); } });
+    }
+
+    private String prayerSummary() {
+        return prefs.city()[0] + " · الأذان · تعديل الأوقات · التقويم";
     }
 
     private void header(String text) {

@@ -70,6 +70,7 @@ public class SettingsActivity extends Activity {
             root.addView(bg, new FrameLayout.LayoutParams(-1, -1));
         }
         ScrollView scroll = new ScrollView(this);
+        scrollView = scroll;
         scroll.setVerticalScrollBarEnabled(false);
         FrameLayout frame = new FrameLayout(this);
         list = new LinearLayout(this);
@@ -95,14 +96,36 @@ public class SettingsActivity extends Activity {
         render();
     }
 
+    private ScrollView scrollView;      // the list's scroll view, kept across re-renders
+    private String focusKey;            // the label of the row that had the focus last
+    private boolean firstRender = true;
+
     @Override
     protected void onResume() {   // back in front (from the TV's settings, or opened again over itself): show what is set now
         super.onResume();
+        final boolean again = !firstRender;
+        final int y = scrollView != null ? scrollView.getScrollY() : 0;
+        final String key = focusKey;
         render();
+        if (again) restorePlace(y, key);
+    }
+
+    /** After a re-render: the same row gets the focus again and the list stays where it was (no jump to the top). */
+    private void restorePlace(final int y, final String key) {
+        if (key != null)
+            for (int i = 0; i < list.getChildCount(); i++) {
+                View c = list.getChildAt(i);
+                if (key.equals(c.getTag())) { c.requestFocus(); break; }
+            }
+        if (scrollView != null) scrollView.post(() -> scrollView.scrollTo(0, y));
     }
 
     private void render() {
         latinDigits = DigitsText.isLatin(prefs.digits());
+        // coming back from a dialog or a picker: the same row keeps the focus and the list keeps its place
+        final int keepY = scrollView != null ? scrollView.getScrollY() : 0;
+        final String keepKey = firstRender ? null : focusKey;
+        firstRender = false;
         list.removeAllViews();
         LinearLayout head = new LinearLayout(this);
         head.setOrientation(LinearLayout.HORIZONTAL);
@@ -131,7 +154,7 @@ public class SettingsActivity extends Activity {
                     .setClassName("sa.urtv.home", "sa.urtv.home.MainActivity")
                     .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
             } catch (Exception e) { toast("تطبيق الشاشة الرئيسية غير مثبت"); } } });
-        homeRow.requestFocus();
+        if (keepKey == null) homeRow.requestFocus();
         row("معاينة الشاشة", "شاهد الشاشة الآن", R.drawable.ic_play, new Runnable() { public void run() {
             startActivity(new Intent(SettingsActivity.this, MainActivity.class)); } });
 
@@ -1142,6 +1165,7 @@ public class SettingsActivity extends Activity {
         card.setLayoutDirection(View.LAYOUT_DIRECTION_RTL);
         card.setPadding(dp(24), dp(14), dp(20), dp(14));
         card.setFocusable(true);
+        card.setTag(label);
         card.setClickable(true);
         card.setBackgroundResource(R.drawable.glass_row);   // glass; the gold-tinted one while it has the focus
 
@@ -1184,6 +1208,7 @@ public class SettingsActivity extends Activity {
         card.setOnFocusChangeListener((v, has) -> {
             // No scaling: a scaled rounded card overlapped its neighbours and blurred the text. The glass changes by itself (glass_row).
             chevron.setTextColor(has ? 0xFFD6AF6B : 0x99C6BBA4);
+            if (has) focusKey = label;
         });
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(-1, -2);
         lp.bottomMargin = dp(9);

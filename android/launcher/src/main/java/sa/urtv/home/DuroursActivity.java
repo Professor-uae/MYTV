@@ -3,18 +3,27 @@ package sa.urtv.home;
 import android.app.Activity;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.widget.ImageView;
+import android.webkit.WebSettings;
+import android.webkit.WebView;
 
-/** «ديرة الدرور»: the calendar page shown whole, full screen. Any click or Back closes it. */
+/** «ديرة الدرور»: the interactive calendar wheel (assets/durour/index.html), full screen. Back closes it. */
 public class DuroursActivity extends Activity {
     @Override
     protected void onCreate(Bundle state) {
         super.onCreate(state);
-        ImageView page = new ImageView(this);
-        page.setImageResource(R.drawable.durour);
-        page.setScaleType(ImageView.ScaleType.FIT_CENTER);
-        page.setBackgroundColor(Color.rgb(11, 10, 8));
-        page.setOnClickListener(v -> finish());
+        WebView page = new WebView(this);
+        page.setBackgroundColor(Color.rgb(246, 242, 234));
+        WebSettings s = page.getSettings();
+        s.setJavaScriptEnabled(true);
+        s.setDomStorageEnabled(false);
+        s.setAllowFileAccess(true);
+        page.setWebViewClient(new android.webkit.WebViewClient());
+        page.loadUrl("file:///android_asset/durour/index.html");
         setContentView(page);
+    }
+
+    @Override
+    public void onBackPressed() {
+        finish();
     }
 }

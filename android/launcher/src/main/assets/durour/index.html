@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>دائرة الدرور — تفاعلية</title>
+<style>
+:root{
+  --bg:#f6f2ea; --ink:#3b3322; --gold:#a08650; --muted:#8a7f6a; --card:#fffdf8; --line:#e5dccb;
+  --spring:#8cc06a; --summer:#ef7a63; --autumn:#b49d68; --winter:#2d6e74; --today:#c0392b;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Noto Naskh Arabic","Geeza Pro","Segoe UI",Tahoma,sans-serif;background:var(--bg);color:var(--ink)}
+header{text-align:center;padding:22px 16px 6px}
+h1{margin:0;font-size:30px;color:var(--gold)}
+.sub{color:var(--muted);font-size:14px;margin-top:6px}
+.wrap{display:grid;grid-template-columns:minmax(300px,540px) 1fr;gap:22px;max-width:1120px;margin:0 auto;padding:16px;align-items:start}
+@media(max-width:820px){.wrap{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:16px}
+h3{margin:0 0 10px;font-size:17px;color:var(--gold)}
+svg{width:100%;height:auto;display:block}
+svg .m{cursor:pointer}
+svg .m:hover{filter:brightness(0.96)}
+.ctrl{display:flex;gap:8px;align-items:center;justify-content:center;margin-top:12px;flex-wrap:wrap}
+input[type=date]{padding:7px 10px;border:1px solid var(--line);border-radius:8px;font:inherit;background:#fff}
+button{padding:7px 14px;border:0;border-radius:8px;background:var(--gold);color:#fff;font:inherit;cursor:pointer}
+button:hover{opacity:.9}
+.today-big{font-size:22px;font-weight:700;line-height:1.5}
+.hijri{color:var(--muted);margin-top:2px}
+.kv{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+.kv div{background:#f3ecdc;border-radius:10px;padding:10px}
+.kv b{display:block;font-size:13px;color:var(--muted);font-weight:500}
+.kv span{font-size:18px;font-weight:700}
+.bar{height:10px;background:#ece3cf;border-radius:6px;overflow:hidden;margin-top:14px}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--spring),var(--summer),var(--autumn),var(--winter));width:0;transition:width .6s}
+.note{margin:12px 0 4px;font-size:15px}
+.mode{margin:4px 0 0;font-size:13px;color:var(--muted)}
+.legend{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:8px}
+.legend div{background:#f8f3e7;border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:14px}
+.legend small{display:block;color:var(--muted);font-size:12px;margin-top:2px}
+.hint{font-size:13px;color:var(--muted);text-align:center;margin-top:10px}
+</style>
+</head>
+<body>
+<header>
+  <h1>دائرة الدرور</h1>
+  <div class="sub">تقويم الفصول والأنواء — نسخة تفاعلية تتحدد تلقائياً على تاريخ اليوم</div>
+</header>
+
+<div class="wrap">
+  <section>
+    <div class="card">
+      <svg id="wheel" viewBox="0 0 600 600" role="img" aria-label="دائرة الدرور التفاعلية">
+        <g id="static"></g>
+        <g id="mk"></g>
+        <text id="cday" x="300" y="290" text-anchor="middle" font-size="40" font-weight="700" fill="#a08650"></text>
+        <text id="cmonth" x="300" y="318" text-anchor="middle" font-size="16" fill="#6b5a2e"></text>
+      </svg>
+      <div class="ctrl">
+        <input type="date" id="pick" aria-label="اختيار تاريخ">
+        <button id="todayBtn">اليوم</button>
+      </div>
+      <div class="hint">اضغط على أي شهر في الحلقة الخارجية لعرض أول يوم فيه</div>
+    </div>
+  </section>
+
+  <section>
+    <div class="card" id="panel"></div>
+    <div class="card">
+      <h3>مفتاح الرموز</h3>
+      <div class="legend" id="legend"></div>
+    </div>
+  </section>
+</div>
+
+<script>
+const NS = 'http://www.w3.org/2000/svg';
+const C = 300;
+const MONTHS = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+
+// بدايات الفصول حسب مؤشرات الدائرة: الاعتدال الربيعي، الانقلاب الصيفي، الاعتدال الخريفي، الانقلاب الشتوي
+const SEASONS = [
+  {name:'الربيع', m:2,  d:20, color:'#8cc06a', note:'يبدأ عند الاعتدال الربيعي (20 مارس تقريباً).'},
+  {name:'الصيف',  m:5,  d:21, color:'#ef7a63', note:'يبدأ عند الانقلاب الصيفي (21 يونيو تقريباً).'},
+  {name:'الخريف', m:8,  d:22, color:'#b49d68', note:'يبدأ عند الاعتدال الخريفي (22 سبتمبر تقريباً).'},
+  {name:'الشتاء', m:11, d:21, color:'#2d6e74', note:'يبدأ عند الانقلاب الشتوي (21 ديسمبر تقريباً).'}
+];
+
+// رموز المفتاح كما وردت في الدائرة
+const LEGEND = [
+  ['🌡️ ارتفاع درجات الحرارة', ''],
+  ['🥶 انخفاض درجات الحرارة', ''],
+  ['💧 رطوبة عالية', ''],
+  ['☀️ أجواء جافة', ''],
+  ['🌬️ رياح نشطة إلى قوية', ''],
+  ['🌪️ رياح محملة بالغبار والأتربة', ''],
+  ['🌦️ أمطار خفيفة إلى متوسطة', ''],
+  ['⛈️ أمطار رعدية غزيرة', ''],
+  ['❄️ ذروة موسم الأمطار والبرد', ''],
+  ['⚡ اضطرابات جوية', ''],
+  ['🌊 بحر مضطرب وأمواج عالية', ''],
+  ['🌟 طلوع سهيل', 'نجم سهيل'],
+  ['🌠 غروب سهيل', 'نجم سهيل'],
+  ['✨ طلوع الثريا', 'نجم الثريا'],
+  ['🌌 غروب الثريا', 'نجم الثريا'],
+  ['🔁 الانقلابات والاعتدالات', 'تظهر على الحلقة كعلامات فاصلة للفصول']
+];
+
+// ===== أدوات التاريخ =====
+function todayDate(){ const n = new Date(); return new Date(n.getFullYear(), n.getMonth(), n.getDate()); }
+function dim(y, m){ return new Date(y, m + 1, 0).getDate(); }
+// الزاوية بالدرجات مع اتجاه عقارب الساعة من الأعلى؛ يونيو في الأعلى، ويتقدم الزمن عكس اتجاه العقارب كما في الدائرة
+function angleOf(y, m, d){ const c = 150 - 30 * m; return c + 15 - ((d - 0.5) / dim(y, m)) * 30; }
+function pt(r, a){ const t = a * Math.PI / 180; return [C + r * Math.sin(t), C - r * Math.cos(t)]; }
+function el(tag, attrs, parent){
+  const e = document.createElementNS(NS, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  if (parent) parent.appendChild(e);
+  return e;
+}
+function arcPath(r1, r2, a1, a2){
+  const [x1,y1] = pt(r2,a1), [x2,y2] = pt(r2,a2), [x3,y3] = pt(r1,a2), [x4,y4] = pt(r1,a1);
+  const large = Math.abs(a1 - a2) > 180 ? 1 : 0;
+  const so = a2 > a1 ? 1 : 0, si = a1 > a2 ? 1 : 0;
+  return `M${x1},${y1} A${r2},${r2} 0 ${large} ${so} ${x2},${y2} L${x3},${y3} A${r1},${r1} 0 ${large} ${si} ${x4},${y4} Z`;
+}
+function seasonInfo(dt){
+  const y = dt.getFullYear();
+  const starts = [];
+  for (const yy of [y - 1, y, y + 1]) for (const s of SEASONS) starts.push({...s, date: new Date(yy, s.m, s.d)});
+  starts.sort((a, b) => a.date - b.date);
+  let cur = null, next = null;
+  for (let i = 0; i < starts.length; i++){
+    if (starts[i].date <= dt){ cur = starts[i]; next = starts[i + 1]; }
+  }
+  return {cur, next};
+}
+function isoLocal(d){
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+// ===== حالة الواجهة =====
+let mode = 'today';   // 'today' يتبع تاريخ الجهاز تلقائياً، أو 'pick' لتاريخ مختار
+let sel = null;
+let lastKey = isoLocal(todayDate());
+function current(){ return mode === 'today' ? todayDate() : sel; }
+
+// ===== رسم الدائرة الثابت =====
+function drawStatic(){
+  const svg = document.getElementById('static');
+  svg.innerHTML = '';
+  const Y = todayDate().getFullYear();
+
+  // الحلقة الشهرية
+  for (let m = 0; m < 12; m++){
+    const a1 = angleOf(Y, m, 1), a2 = angleOf(Y, m, dim(Y, m));
+    const p = el('path', {d: arcPath(262, 294, a1, a2), class:'m', 'data-m': m,
+      fill: m % 2 ? '#e9e0cb' : '#f1ead9', stroke:'#c9b88f', 'stroke-width':0.6}, svg);
+    const t = el('title', {}, p); t.textContent = MONTHS[m];
+    p.addEventListener('click', () => { mode = 'pick'; sel = new Date(Y, m, 1); refresh(); });
+    const [tx, ty] = pt(278, 150 - 30 * m);
+    const lbl = el('text', {x: tx, y: ty, 'text-anchor':'middle', 'dominant-baseline':'middle',
+      'font-size':13, 'font-weight':700, fill:'#6b5a2e', 'pointer-events':'none'}, svg);
+    lbl.textContent = MONTHS[m];
+  }
+
+  // تدريج الأيام
+  for (let m = 0; m < 12; m++){
+    for (let d = 1; d <= dim(Y, m); d++){
+      const a = angleOf(Y, m, d);
+      const major = d === 1 || d % 5 === 0;
+      const [x1,y1] = pt(258, a), [x2,y2] = pt(major ? 242 : 250, a);
+      el('line', {x1, y1, x2, y2, stroke:'#8a7040', 'stroke-width': major ? 1.1 : 0.5}, svg);
+      if (major && d !== 1){
+        const [lx, ly] = pt(234, a);
+        const t = el('text', {x:lx, y:ly, 'text-anchor':'middle', 'dominant-baseline':'middle',
+          'font-size':8.5, fill:'#7a6a44'}, svg);
+        t.textContent = d;
+      }
+    }
+  }
+
+  // حلقة الفصول
+  for (let i = 0; i < 4; i++){
+    const s = SEASONS[i], e = SEASONS[(i + 1) % 4];
+    const a1 = angleOf(Y, s.m, s.d);
+    let a2 = angleOf(Y, e.m, e.d);
+    while (a2 > a1) a2 -= 360;
+    while (a2 < a1 - 360) a2 += 360;
+    const p = el('path', {d: arcPath(170, 222, a1, a2), fill: s.color, stroke:'#fff', 'stroke-width':1.5}, svg);
+    const t = el('title', {}, p); t.textContent = `${s.name} — ${s.note}`;
+    const [sx, sy] = pt(196, (a1 + a2) / 2);
+    const lbl = el('text', {x: sx, y: sy, 'text-anchor':'middle', 'dominant-baseline':'middle',
+      'font-size':15, 'font-weight':700, fill:'#fff', 'pointer-events':'none'}, svg);
+    lbl.textContent = s.name;
+  }
+
+  // القرص الداخلي
+  el('circle', {cx:C, cy:C, r:168, fill:'#fbf8f1', stroke:'#c9b88f'}, svg);
+  for (let m = 0; m < 12; m++){
+    const a = 150 - 30 * m + 15;
+    const [x1,y1] = pt(70, a), [x2,y2] = pt(168, a);
+    el('line', {x1, y1, x2, y2, stroke:'#e2d7bd'}, svg);
+  }
+  el('circle', {cx:C, cy:C, r:64, fill:'#fff', stroke:'#a08650', 'stroke-width':1.5}, svg);
+}
+
+// ===== المؤشرات: اليوم تلقائياً، والتاريخ المختار إن وُجد =====
+function drawMarkers(){
+  const g = document.getElementById('mk');
+  g.innerHTML = '';
+  const t = todayDate();
+  const s = current();
+
+  if (s && !(s.getTime() === t.getTime())){
+    const a = angleOf(s.getFullYear(), s.getMonth(), s.getDate());
+    const [x1,y1] = pt(66,a), [x2,y2] = pt(262,a);
+    el('line', {x1, y1, x2, y2, stroke:'#a08650', 'stroke-width':2.5, 'stroke-linecap':'round'}, g);
+  }
+  const ta = angleOf(t.getFullYear(), t.getMonth(), t.getDate());
+  const [tx, ty] = pt(250, ta);
+  const [ox, oy] = pt(236, ta);
+  const dot = el('circle', {cx:tx, cy:ty, r:6.5, fill:'#c0392b', stroke:'#fff', 'stroke-width':2}, g);
+  el('title', {}, dot).textContent = 'اليوم';
+  el('line', {x1:ox, y1:oy, x2:tx, y2:ty, stroke:'#c0392b', 'stroke-width':2}, g);
+
+  const cur = s || t;
+  document.getElementById('cday').textContent = cur.getDate();
+  document.getElementById('cmonth').textContent = MONTHS[cur.getMonth()] + ' ' + cur.getFullYear();
+  document.getElementById('pick').value = isoLocal(cur);
+}
+
+// ===== لوحة المعلومات =====
+function renderPanel(){
+  const t = todayDate();
+  const d = current() || t;
+  const isToday = d.getTime() === t.getTime();
+  const gFmt = new Intl.DateTimeFormat('ar-u-ca-gregory', {weekday:'long', day:'numeric', month:'long', year:'numeric'});
+  let hijri = '';
+  try {
+    hijri = new Intl.DateTimeFormat('ar-SA-u-ca-islamic-umalqura', {day:'numeric', month:'long', year:'numeric'}).format(d);
+  } catch(e) { hijri = ''; }
+
+  const {cur, next} = seasonInfo(d);
+  const since = Math.round((d - cur.date) / 864e5);
+  const toNext = Math.round((next.date - d) / 864e5);
+  const yStart = new Date(d.getFullYear(), 0, 1);
+  const yEnd = new Date(d.getFullYear() + 1, 0, 1);
+  const total = Math.round((yEnd - yStart) / 864e5);
+  const doy = Math.round((d - yStart) / 864e5) + 1;
+  const pct = (doy / total * 100).toFixed(1);
+
+  document.getElementById('panel').innerHTML = `
+    <h3>${isToday ? 'تاريخ اليوم' : 'التاريخ المختار'}</h3>
+    <div class="today-big">${gFmt.format(d)}</div>
+    <div class="hijri">${hijri}</div>
+    <div class="kv">
+      <div><b>الفصل الحالي</b><span style="color:${cur.color}">${cur.name}</span></div>
+      <div><b>مضى من الفصل</b><span>${since} يوم</span></div>
+      <div><b>${next.name} يبدأ بعد</b><span>${toNext} يوم</span></div>
+      <div><b>الترتيب في السنة</b><span>${doy} / ${total}</span></div>
+    </div>
+    <div class="bar"><i style="width:${pct}%"></i></div>
+    <p class="note">${cur.note}</p>
+    <p class="mode">${isToday ? 'يتحدث هذا القسم تلقائياً حسب تاريخ جهازك.' : 'أنت تستعرض تاريخاً محدداً — اضغط «اليوم» للعودة إلى التاريخ الحالي.'}</p>
+  `;
+}
+
+function renderLegend(){
+  document.getElementById('legend').innerHTML = LEGEND.map(([a, b]) =>
+    `<div>${a}${b ? `<small>${b}</small>` : ''}</div>`).join('');
+}
+
+function refresh(){
+  drawMarkers();
+  renderPanel();
+}
+
+// ===== التفاعل =====
+document.getElementById('pick').addEventListener('change', e => {
+  if (!e.target.value) return;
+  const [y, m, d] = e.target.value.split('-').map(Number);
+  mode = 'pick';
+  sel = new Date(y, m - 1, d);
+  refresh();
+});
+document.getElementById('todayBtn').addEventListener('click', () => {
+  mode = 'today';
+  sel = null;
+  drawStatic();
+  refresh();
+});
+
+// تحديث تلقائي: عند تغيّر اليوم (منتصف الليل) أو السنة
+function autoUpdate(){
+  const key = isoLocal(todayDate());
+  if (key !== lastKey){
+    lastKey = key;
+    drawStatic();
+    refresh();
+  }
+}
+
+drawStatic();
+renderLegend();
+refresh();
+setInterval(autoUpdate, 60 * 1000);
+</script>
+</body>
+</html>

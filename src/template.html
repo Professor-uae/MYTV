@@ -81,11 +81,6 @@
   }
   /* each photo's darkness as a plain black layer: same look as filter:brightness, nothing to recompute */
   .photo::after{content:'';position:absolute;inset:0;background:#000;opacity:var(--dim,.05)}
-  /* Dera al Doror: its own screen, the whole calendar page shown (not cropped), in the photo turns every 6th slot */
-  #durour{position:fixed;inset:0;z-index:60;display:none;align-items:center;justify-content:center;background:#0b0a08}
-  #durour.on{display:flex}
-  #durour img{max-width:100%;max-height:100%;width:auto;height:100%;object-fit:contain}
-  #durour .durour-cap{position:absolute;left:0;right:0;bottom:1.5vh;text-align:center;font-size:1.6vh;color:#D9C98F;opacity:.85}
   .veil{
     position:fixed;inset:0;z-index:1;
     background:
@@ -538,7 +533,6 @@
 </head>
 <body>
 <div class="photo"></div>
-<div id="durour"><img alt="ديرة الدرور"><div class="durour-cap">ديرة الدرور · مركز جامع الشيخ زايد الكبير</div></div>
 <div id="credit"></div>
 <div class="veil"></div>
 <div class="grain"></div>
@@ -3086,15 +3080,6 @@ function showOwn(pick, own, local){
   };
   next(0);
 }
-// Dera al Doror: its own screen in every 6th photo turn (3 hours at the default 30 minutes), the whole page shown
-const DURUOR_URL = PHOTO_BASE + 'durour-doror.jpg';
-function showDurour(){
-  const el = document.getElementById('durour'); if(!el) return;
-  const img = el.querySelector('img');
-  if(!img.getAttribute('src')) img.src = DURUOR_URL;
-  el.classList.add('on');
-}
-function hideDurour(){ const el = document.getElementById('durour'); if(el) el.classList.remove('on'); }
 function applyBackground(force){
   try {
     const p = riyadhParts();
@@ -3102,10 +3087,8 @@ function applyBackground(force){
     const slot = riyadhDayNumber() * (1440 / slotMin) + Math.floor((p.h * 60 + p.mi) / slotMin);
     if(slot === BG_SLOT && !force) return;
     BG_SLOT = slot; BG_TURN++;   // a photo of theirs still on its way for an earlier turn is dropped
-    hideDurour();
     const only = OWN_ONLY(), own = ownPhotos();
     const set = !only && REMOTE_BGS.length ? photoSet(REMOTE_BGS.length).map(k => REMOTE_BGS[k]) : [];
-    if(!only && set.length && slot % 6 === 5){ showDurour(); return; }
     const local = BGS[slot % BGS.length];
     // what rotates: ours (the hosted set, else the bundled photos once the owner has some), then the owner's; only = theirs alone
     let pool = own;

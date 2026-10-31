@@ -523,6 +523,16 @@ public class MainActivity extends Activity {
         cardByPkg.clear();
         List<App> rest = new ArrayList<>(byPkg.values());
         Collections.sort(rest, (x, y) -> x.label.compareToIgnoreCase(y.label));
+        // «ديرة الدرور»: its own tile among the apps, opening the calendar page (DuroursActivity)
+        App durour = new App();
+        durour.pkg = "sa.urtv.home.durour";
+        durour.label = "ديرة الدرور";
+        durour.category = Intent.CATEGORY_LAUNCHER;
+        durour.component = new ComponentName(this, DuroursActivity.class);
+        durour.art = getDrawable(R.drawable.durour_tile);
+        durour.color = Color.rgb(11, 10, 8);
+        rest.add(durour);
+        Collections.sort(rest, (x, y) -> x.label.compareToIgnoreCase(y.label));
         // Fewer than MIN_DOCK of the chosen apps installed: top the dock up from the rest.
         while (dock.size() < MIN_DOCK && !rest.isEmpty()) dock.add(rest.remove(0));
 

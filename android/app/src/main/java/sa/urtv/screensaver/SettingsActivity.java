@@ -217,6 +217,8 @@ public class SettingsActivity extends Activity {
         }
         row("التحية والطقس", prefs.greeting() ? "تعمل" : "متوقفة", R.drawable.ic_eye,
             new Runnable() { public void run() { prefs.setGreeting(!prefs.greeting()); render(); } });
+        row("السوق", Prefs.marketLabel(prefs.market()), R.drawable.ic_place,
+            new Runnable() { public void run() { pickMarket(); } });
         row("اسم العائلة في التحية", prefs.family(), R.drawable.ic_eye,
             new Runnable() { public void run() { askFamily(); } });
         row("ترتيب التطبيقات المفضلة", "قائمة ترتّب فيها المفضلة بالأسهم", R.drawable.ic_star,
@@ -775,6 +777,19 @@ public class SettingsActivity extends Activity {
         new Dlg(this).setTitle("عرض الأسواق")
             .setSingleChoiceItems(labels, sel, (d, i) -> { prefs.setMkStyle(Prefs.MK_STYLES[i][0]); d.dismiss(); render(); })
             .show();
+    }
+
+    /** «السوق»: the Abu Dhabi markets (UAE) or the Tadawul ones (Saudi) for the markets and the stocks. */
+    private void pickMarket() {
+        final String[] keys = {"uae", "sa"};
+        String[] labels = {Prefs.marketLabel("uae"), Prefs.marketLabel("sa")};
+        int sel = keys[0].equals(prefs.market()) ? 0 : 1;
+        new Dlg(this).setTitle("السوق: الأسهم والمؤشرات")
+            .setSingleChoiceItems(labels, sel, (d, i) -> {
+                prefs.setMarket(keys[i]);
+                prefs.setStocks(java.util.Arrays.asList((keys[i].equals("uae") ? Prefs.DEFAULT_STOCKS_UAE : Prefs.DEFAULT_STOCKS).split(",")));   // the list follows the market
+                d.dismiss(); render(); })
+            .setNegativeButton("إلغاء", null).show();
     }
 
     private void pickTheme() {

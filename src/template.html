@@ -623,7 +623,10 @@ const _tzOk = z => { try{ new Intl.DateTimeFormat('en',{timeZone:z}); return tru
 // the cards a slot can show (Prefs.PANELS in the app is the same list); «none» is the absence of one
 const CARD_KINDS = ['shows','prayers','forecast','hourly','prayerrow','matches','verse','wisdom','adhkar','stocks','tasks','year','smart','today'];
 const CONFIG = {
-  city: (c => /^abu\s*dhabi$/i.test(c) ? 'أبوظبي' : c)(_Q.get('city') || 'الرياض'),   // the English name the TV may have stored shows in Arabic
+  city: (c => /^abu\s*dhabi$/i.test(c) ? 'أبوظبي' : c)(_Q.get('city') || 'الرياض'),
+  // the market of the markets and the stocks: uae (Abu Dhabi, Dubai…) or sa (Tadawul); by the city unless #market= says
+  market: _Q.get('market') === 'sa' ? 'sa' : _Q.get('market') === 'uae' ? 'uae'
+          : (/abu\s*dhabi|dubai|sharjah|ajman|al\s*ain|ras\s*al|fujairah|أبوظبي|ابوظبي|دبي|الشارقة|عجمان|العين|رأس الخيمة|الفجيرة/i.test(_Q.get('city') || 'الرياض') ? 'uae' : 'sa'),   // the English name the TV may have stored shows in Arabic
   latitude: _num('lat', 24.7136),
   longitude: _num('lon', 46.6753),
   timezone: _tzOk(_Q.get('tz') || 'Asia/Riyadh') ? (_Q.get('tz') || 'Asia/Riyadh') : 'Asia/Riyadh',
@@ -684,7 +687,7 @@ const CONFIG = {
   // the national days (23 September, 22 February): #national=auto (the default) or off
   national: _Q.get('national') === 'off' ? 'off' : 'auto',
   // the stocks card's watchlist: #stocks=2222,1120,AAPL,NVDA (up to 8; 4 digits = a Tadawul code, letters = a US ticker)
-  stocks: _list('stocks').map(x => x.toUpperCase()).filter((x, i, a) => /^(\d{4}|[A-Z][A-Z.\-]{0,5})$/.test(x) && a.indexOf(x) === i).slice(0, 8),
+  stocks: _list('stocks').map(x => x.toUpperCase()).filter((x, i, a) => /^(\d{4}|[A-Z][A-Z.\-]{0,11})$/.test(x) && a.indexOf(x) === i).slice(0, 8),
   // the bottom-left slot: #slot=matches|weather|fasting|countdown|none (anything else = matches)
   slot: (v => ['weather','fasting','countdown','markets','none'].includes(v) ? v : 'matches')(_Q.get('slot')),
   // #cd=YYYY-MM-DD&cdname=...: the date and name for slot=countdown (a bad date = none)
@@ -1755,15 +1758,21 @@ const MARKETS = {
   gold:   {name:'الذهب',    sym:'GC=F',     dec:2, unit:'ر.س', mul:GRAM},
   silver: {name:'الفضة',    sym:'SI=F',     dec:2, unit:'ر.س', mul:GRAM},
   xrp:    {name:'ريبل',     cg:'ripple',    dec:2, unit:'$'},
+  // the UAE set (#market=uae): the same slots as tasi, aramco, gold and silver
+  adx:    {name:'مؤشر أبوظبي', sym:'FADGI.AD', dec:0},
+  fab:    {name:'الأول',      sym:'FAB.AD',   dec:2, unit:'د.إ'},
+  goldAED:   {name:'الذهب',   sym:'GC=F',     dec:2, unit:'د.إ', mul:3.6725/31.1035},
+  silverAED: {name:'الفضة',   sym:'SI=F',     dec:2, unit:'د.إ', mul:3.6725/31.1035},
 };
+const UAE_KEY = {tasi:'adx', aramco:'fab', gold:'goldAED', silver:'silverAED'};   // the Saudi keys' UAE twins
 const CG_YAHOO = {bitcoin:'BTC-USD', ripple:'XRP-USD'};   // the file CI keeps holds crypto under Yahoo's pair
-const TICKERS = CONFIG.markets.map(k => Object.assign({key:k, chg:k + '-chg', px:k + '-px'}, MARKETS[k]))
+const TICKERS = CONFIG.markets.map(k => CONFIG.market === 'uae' && UAE_KEY[k] ? UAE_KEY[k] : k).map(k => Object.assign({key:k, chg:k + '-chg', px:k + '-px'}, MARKETS[k]))
   .map(t => Object.assign(t, {fk: t.sym || CG_YAHOO[t.cg]}));
 const PRICES = CONFIG.mkStyle === 'prices';
 
 // the default list with arrows is the markup in the page; anything else is made here, before the saved copy is put back
 function buildMarkets(){
-  if(!PRICES && TICKERS.map(t => t.key).join() === 'tasi,spx,btc') return;
+  if(!PRICES && ['tasi,spx,btc','adx,spx,btc'].includes(TICKERS.map(t => t.key).join())) return;
   const mk = document.querySelector('.mk');
   mk.className = 'mk' + (PRICES ? ' px' : '') + (PRICES && TICKERS.length > 2 ? ' g' : '');
   mk.innerHTML = TICKERS.map(t => `<span class="m"><span>${esc(t.name)}</span>`
@@ -2014,7 +2023,7 @@ const loadMarkets = guarded('markets', async function(){
     return j;
   };
   if(WITH_LINE) TICKERS.forEach(t => job(t.fk, t.cg, false).tk.push(t));
-  if(USES('stocks')) CONFIG.stocks.forEach(k => job(isSA(k) ? k + '.SR' : k, null, true).sk.push(k));
+  if(USES('stocks')) CONFIG.stocks.forEach(k => job(isSA(k) ? k + '.SR' : (adxSym(k) || k), null, true).sk.push(k));
   if(!jobs.size) return;
   await loadMarketFile();
   let asked = 0;
@@ -2678,10 +2687,17 @@ const TADAWUL = {   // Arabic short names of the 30 largest companies; any other
   '1810':'سيرا', '8010':'التعاونية', '4300':'دار الأركان',
 };
 const isSA = k => /^\d/.test(k);
-const stockName = k => isSA(k) ? (TADAWUL[k] || ar(k)) : k;
+// the Abu Dhabi exchange (ADX): the short code of a stock and its Yahoo symbol and Arabic name
+const ADX = {FAB:['FAB.AD','أبوظبي الأول'], ADCB:['ADCB.AD','أبوظبي التجاري'], ADNOCDRILL:['ADNOCDRILL.AD','أدنوك للحفر'],
+  ETISALAT:['ETISALAT.AD','اتصالات (e&)'], ALDAR:['ALDAR.AD','الدار'], IHC:['IHC.AD','IHC'],
+  ADNOCGAS:['ADNOCGAS.AD','أدنوك للغاز'], ADNOCDIST:['ADNOCDIST.AD','أدنوك للتوزيع']};
+const adxSym = k => ADX[k] ? ADX[k][0] : null;
+const hoursOf = k => isSA(k) ? true : adxSym(k) ? 'uae' : false;   // which exchange's hours a stock keeps
+const stockName = k => isSA(k) ? (TADAWUL[k] || ar(k)) : ADX[k] ? ADX[k][1] : k;
 // The exchanges keep their own hours whatever the city: Tadawul Sun-Thu 10:00-15:00 (Riyadh is UTC+3 all year); the US Mon-Fri 09:30-16:00 New York time (holidays are ignored)
 const NY_CLOCK = new Intl.DateTimeFormat('en-US', {timeZone:'America/New_York', weekday:'short', hour:'2-digit', minute:'2-digit', hourCycle:'h23'});
 function marketOpen(sa, ms = Date.now()){
+  if(sa === 'uae'){ const d = new Date(ms + 4*3600000), day = d.getUTCDay(), m = d.getUTCHours() * 60 + d.getUTCMinutes(); return day >= 1 && day <= 5 && m >= 600 && m < 900; }   // ADX: Mon-Fri 10:00-15:00 Abu Dhabi time (UTC+4)
   if(sa){ const d = new Date(ms + 3*3600000), day = d.getUTCDay(), m = d.getUTCHours() * 60 + d.getUTCMinutes(); return day <= 4 && m >= 600 && m < 900; }
   const p = NY_CLOCK.formatToParts(new Date(ms)).reduce((a, x) => (a[x.type] = x.value, a), {}), m = (+p.hour % 24) * 60 + +p.minute;
   return p.weekday !== 'Sat' && p.weekday !== 'Sun' && m >= 570 && m < 960;   // New York's own clock, summer time and winter time alike
@@ -2697,14 +2713,14 @@ function spark(c, up){
 }
 function stocksCard(){
   const shown = CONFIG.stocks.filter(k => STOCKS[k]);
-  const allClosed = shown.length && shown.every(k => !marketOpen(isSA(k)));
-  const mixed = shown.some(k => marketOpen(isSA(k)));
+  const allClosed = shown.length && shown.every(k => !marketOpen(hoursOf(k)));
+  const mixed = shown.some(k => marketOpen(hoursOf(k)));
   const stale = shown.filter(k => staleMark(STOCKS[k])).map(k => STOCKS[k]).sort((a, b) => (a.at || 0) - (b.at || 0));
   const rows = shown.map(k => {
     const d = STOCKS[k], v = d.v, pct = v ? (d.p - v) / v * 100 : null;
     const up = pct !== null ? pct >= 0 : d.c.length > 1 ? d.c[d.c.length - 1] >= d.c[0] : null;
     const cls = up === null ? '' : up ? 'up' : 'down';
-    return `<li class="stk${staleMark(d) ? ' old' : ''}"><span class="nm">${esc(stockName(k))}${mixed && !marketOpen(isSA(k)) ? '<span class="cl">مغلق</span>' : ''}</span>`
+    return `<li class="stk${staleMark(d) ? ' old' : ''}"><span class="nm">${esc(stockName(k))}${mixed && !marketOpen(hoursOf(k)) ? '<span class="cl">مغلق</span>' : ''}</span>`
       + (up === null ? '' : spark(d.c, up)) + `<span class="px">${num(d.p, 2)}</span>`
       + (pct === null ? '' : `<span class="chg ${cls}">${pct >= 0 ? '▲' : '▼'} ${num(Math.abs(pct), 2)}${LATIN ? '%' : '٪'}</span>`) + '</li>';
   });

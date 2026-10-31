@@ -268,13 +268,24 @@ final class Prefs {
     // the stocks card's watchlist (sent as #stocks=): 4-digit Tadawul codes and US tickers, up to MAX_STOCKS
     static final int MAX_STOCKS = 8;
     static final String DEFAULT_STOCKS = "2222,1120,7010,2010";
-    static final String STOCK_PATTERN = "\\d{4}|[A-Za-z][A-Za-z.\\-]{0,5}";
+    static final String DEFAULT_STOCKS_UAE = "FAB,ADCB,ADNOCDRILL,ETISALAT";   // Abu Dhabi exchange, when the market is the UAE
+    static final String STOCK_PATTERN = "\\d{4}|[A-Za-z][A-Za-z.\\-]{0,11}";
 
     List<String> stocks() {
         List<String> v = list("stocks");
-        return v.isEmpty() ? java.util.Arrays.asList(DEFAULT_STOCKS.split(",")) : v;
+        return v.isEmpty() ? java.util.Arrays.asList((uae() ? DEFAULT_STOCKS_UAE : DEFAULT_STOCKS).split(",")) : v;
     }
     void setStocks(List<String> v) { setList("stocks", v); }
+
+    /** The market of the markets and the stocks: "uae" (Abu Dhabi) or "sa" (Tadawul). Unset: by the city (Abu Dhabi, Dubai… = uae). */
+    String market() {
+        String m = sp.getString("market", "");
+        if (m.equals("uae") || m.equals("sa")) return m;
+        return city()[0].matches("(?i).*(abu\\s*dhabi|dubai|sharjah|ajman|al\\s*ain|ras\\s*al|fujairah|أبوظبي|ابوظبي|دبي|الشارقة|عجمان|العين|رأس الخيمة|الفجيرة).*") ? "uae" : "sa";
+    }
+    boolean uae() { return market().equals("uae"); }
+    void setMarket(String v) { sp.edit().putString("market", v).apply(); }
+    static String marketLabel(String v) { return "uae".equals(v) ? "الإماراتي (أبوظبي)" : "السعودي (تاسي)"; }
 
     /** Chosen markets in order, the keys of MARKETS. */
     List<String> markets() {
@@ -397,6 +408,7 @@ final class Prefs {
         return "city=" + Uri.encode(city[0]) + "&lat=" + city[1] + "&lon=" + city[2]
             + "&tz=" + Uri.encode(cityTz())
             + "&family=" + Uri.encode(family())
+            + "&market=" + market()
             + "&teams=" + join(teamIds(), ",")
             + "&events=" + join(list("events"), ",")
             + "&leagues=" + Uri.encode(join(leagues(), ","))

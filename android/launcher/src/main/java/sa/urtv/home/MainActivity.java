@@ -404,7 +404,7 @@ public class MainActivity extends Activity {
         right.setGravity(Gravity.CENTER_VERTICAL);
         right.setClipChildren(false);
         Pill saver = pill("شاشة التوقف", R.drawable.ic_screensaver);
-        saver.setOnClickListener(v -> openPackage(SAVER_PKG));
+        saver.setOnClickListener(v -> launch(new Intent().setClassName(SAVER_PKG, SAVER_PKG + ".MainActivity")));   // straight to the screensaver, not its settings
         Pill inputs = pill("المصادر", R.drawable.ic_input);
         inputs.setOnClickListener(v -> showInputs(v));
         wifiPill = pill("واي فاي", R.drawable.ic_wifi);

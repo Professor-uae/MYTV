@@ -2972,6 +2972,22 @@ function reveal(){
     .then(() => document.documentElement.classList.add('ready'));
 }
 
+// a bright photo gets a darker veil so the white text stays readable: its average brightness decides (CORS-safe, else no change)
+function tuneDim(url){
+  try {
+    const im = new Image(); im.crossOrigin = 'anonymous';
+    im.onload = () => { try {
+      const c = document.createElement('canvas'); c.width = c.height = 12;
+      const g = c.getContext('2d'); g.drawImage(im, 0, 0, 12, 12);
+      const d = g.getImageData(0, 0, 12, 12).data; let sum = 0;
+      for(let i = 0; i < d.length; i += 4) sum += 0.299*d[i] + 0.587*d[i+1] + 0.114*d[i+2];
+      const lum = sum / (d.length / 4) / 255, ph = document.querySelector('.photo');
+      if(lum > 0.55 && ph && ph.style.backgroundImage === "url('" + url + "')")
+        ph.style.setProperty('--dim', String(Math.max(parseFloat(ph.style.getPropertyValue('--dim') || '0'), 0.5)));
+    } catch(e) {} };
+    im.src = url;
+  } catch(e) {}
+}
 function showBackground(url, b){
   const ph = document.querySelector('.photo');
   reveal();
@@ -2980,6 +2996,7 @@ function showBackground(url, b){
   if(ph.style.backgroundImage === next) return;   // same photo: no reload, no new movement
   ph.style.backgroundImage = next;
   ph.style.setProperty('--dim', (1 - (b.d || 0.95)).toFixed(2));
+  tuneDim(url);
   ph.classList.remove('settle'); void ph.offsetWidth; ph.classList.add('settle');
   cardBlurLater(url);
   const cr = document.getElementById('credit');
@@ -3243,7 +3260,7 @@ function boot(){
   const wxCity = document.getElementById('wx-city');
   if(wxCity) wxCity.textContent = CONFIG.city;
   const cs = document.getElementById('clock-sub');
-  if(cs) cs.textContent = 'بتوقيت ' + CONFIG.city;
+  if(cs) cs.textContent = '';   // no «بتوقيت» line under the clock
   document.title = 'شاشة تلفزيونك';
   applyBackground(true);
   loadPhotoIndex().then(() => applyBackground(true));

@@ -41,6 +41,17 @@ NAMES = {
     102527: "سكاكا", 101631: "طبرجل", 106102: "حقل", 392753: "صوير", 109435: "الجبيل",
     107746: "بدر الجنوب", 110336: "الدمام", 107797: "الظهران", 12546009: "رنية", 108927: "القطيف", 109571: "الهفوف", 109323: "الخبر",
 }
+# regions outside Saudi Arabia, written as given (Arabic name, time zone, [(city, lat, lon)]), after the Saudi ones
+OTHER_REGIONS = [
+    ("الإمارات العربية المتحدة", "Asia/Dubai", [
+        ("أبوظبي", 24.4539, 54.3773), ("دبي", 25.2048, 55.2708), ("الشارقة", 25.3463, 55.4209),
+        ("العين", 24.2075, 55.7447), ("عجمان", 25.4052, 55.5136), ("رأس الخيمة", 25.7895, 55.9432),
+        ("الفجيرة", 25.1288, 56.3265), ("أم القيوين", 25.5647, 55.5552), ("خورفكان", 25.3390, 56.3560),
+        ("كلباء", 25.0743, 56.3550), ("دبا الفجيرة", 25.5920, 56.2610), ("الذيد", 25.2880, 55.8810),
+        ("حتا", 24.7960, 56.1180), ("مدينة زايد", 23.6528, 53.7052), ("الرويس", 24.1100, 52.7300),
+        ("غياثي", 23.8370, 52.8050), ("ليوا", 23.1330, 53.7690), ("السلع", 24.0280, 51.7570),
+    ]),
+]
 REGION_FIX = {107746: "16", 106102: "19", 101322: "14", 12546009: "14"}
 POPULATION_FIX = {109194: 100000, 104979: 30000}   # GeoNames lists these as 0
 
@@ -105,6 +116,9 @@ def main(path):
         cities = sorted(by_region[code].items(), key=lambda kv: -kv[1][0])
         items = ",\n".join(f'            {{"{n}", "{lat:.4f}", "{lon:.4f}"}}' for n, (_, lat, lon) in cities)
         rows.append(f'        new Region("{rname}", new String[][] {{\n{items}\n        }})')
+    for rname, tz, cities in OTHER_REGIONS:
+        items = ",\n".join(f'            {{"{n}", "{lat:.4f}", "{lon:.4f}"}}' for n, lat, lon in cities)
+        rows.append(f'        new Region("{rname}", "{tz}", new String[][] {{\n{items}\n        }})')
     body = ",\n".join(rows)
     out = Path(__file__).resolve().parents[2] / "android/app/src/main/java/sa/urtv/screensaver/Cities.java"
     out.write_text(f"""package sa.urtv.screensaver;
@@ -113,8 +127,10 @@ def main(path):
 final class Cities {{
     static final class Region {{
         final String name;
+        final String tz;           // the time zone of every city in it
         final String[][] cities;   // name, latitude, longitude
-        Region(String name, String[][] cities) {{ this.name = name; this.cities = cities; }}
+        Region(String name, String[][] cities) {{ this(name, "Asia/Riyadh", cities); }}
+        Region(String name, String tz, String[][] cities) {{ this.name = name; this.tz = tz; this.cities = cities; }}
     }}
 
     static final Region[] REGIONS = {{
@@ -124,7 +140,8 @@ final class Cities {{
     private Cities() {{}}
 }}
 """, encoding="utf-8")
-    print(f"{sum(len(v) for v in by_region.values())} cities in {len(REGIONS)} regions -> {out.name}")
+    n = sum(len(v) for v in by_region.values()) + sum(len(c) for _, _, c in OTHER_REGIONS)
+    print(f"{n} cities in {len(REGIONS) + len(OTHER_REGIONS)} regions -> {out.name}")
 
 
 if __name__ == "__main__":

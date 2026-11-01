@@ -108,9 +108,9 @@ public class SaverReceiver extends BroadcastReceiver {
         // check everything first, then save: a typo never leaves half the settings changed
         String[] city = null;
         String name = i.getStringExtra("city"), lat = i.getStringExtra("lat"), lon = i.getStringExtra("lon");
-        String tz = i.getStringExtra("tz");   // only for a place of your own; a built-in city is Asia/Riyadh
+        String tz = i.getStringExtra("tz");   // only for a place of your own; a built-in city has its region's zone
         if (tz != null && (name == null || lat == null || lon == null))
-            return "error: tz goes with city, lat and lon (a built-in city is Asia/Riyadh)";
+            return "error: tz goes with city, lat and lon (a built-in city has its region's zone)";
         if (tz != null && !Arrays.asList(java.util.TimeZone.getAvailableIDs()).contains(tz))
             return "error: tz is a time zone like Asia/Kuwait or Africa/Cairo";
         if (name != null) {

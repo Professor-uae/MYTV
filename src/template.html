@@ -766,6 +766,29 @@ function riyadhParts(d = new Date()){
   const f = FMT_ALL.formatToParts(d).reduce((a,p)=>(a[p.type]=p.value,a),{});
   return { y:+f.year, mo:+f.month, d:+f.day, h:(+f.hour)%24, mi:+f.minute, s:+f.second };
 }
+// The Hijri date: Umm al-Qura, except in the UAE (#tz=Asia/Dubai), which goes by its official calendar (the Sheikh Zayed
+// Grand Mosque Centre's for 1448: two months start a day later than Umm al-Qura). [year, month, its first day in the city];
+// the last row only closes the one before it. Past the table, Umm al-Qura again.
+const UAE_MONTHS = [
+  [1448, 1, '2026-06-16'], [1448, 2, '2026-07-16'], [1448, 3, '2026-08-14'], [1448, 4, '2026-09-12'],
+  [1448, 5, '2026-10-12'], [1448, 6, '2026-11-11'], [1448, 7, '2026-12-10'], [1448, 8, '2027-01-09'],
+  [1448, 9, '2027-02-08'], [1448, 10, '2027-03-10'], [1448, 11, '2027-04-08'], [1448, 12, '2027-05-07'],
+  [1449, 1, '2027-06-06'],
+];
+const HIJRI_MONTHS = ['محرم','صفر','ربيع الأول','ربيع الآخر','جمادى الأولى','جمادى الآخرة','رجب','شعبان','رمضان','شوال','ذو القعدة','ذو الحجة'];
+const HIJRI_UQ = new Intl.DateTimeFormat('en-u-ca-islamic-umalqura',{timeZone:'UTC',year:'numeric',month:'numeric',day:'numeric'});
+// {year, month, day, uae} of a day in the city, given as 'YYYY-MM-DD'; uae: it came from the UAE table
+function hijriOfDay(key){
+  if(CONFIG.timezone === 'Asia/Dubai')
+    for(let i = 0; i < UAE_MONTHS.length - 1; i++){
+      const [year, month, start] = UAE_MONTHS[i];
+      if(key >= start && key < UAE_MONTHS[i + 1][2])
+        return {year, month, day: Math.round((Date.parse(key) - Date.parse(start)) / 86400000) + 1, uae: true};
+    }
+  return HIJRI_UQ.formatToParts(new Date(key + 'T12:00:00Z')).reduce((a,x) => (a[x.type] = +x.value.replace(/[^0-9]/g,''), a), {});
+}
+const hijriOf = (d = new Date()) => hijriOfDay(FMT_DATE.format(d));   // the Hijri date of that moment's day in the city
+
 // how far the city's clock is ahead of UTC at that moment, in ms (Riyadh +3 h all year; Cairo changes with summer time)
 function tzOffsetMs(ms){
   const p = riyadhParts(new Date(ms));
@@ -818,9 +841,12 @@ function tickDates(){
   nl.hidden = !nat;
   if(nat) setText(nl, nat.name + ' ' + ar(nat.n) + nat.unit);
   try{
-    let h = new Intl.DateTimeFormat('ar-SA-u-ca-islamic-umalqura-nu-' + NU,{
-      timeZone: CONFIG.timezone, weekday:'long', day:'numeric', month:'long', year:'numeric'
-    }).format(now);
+    const u = hijriOf(now);
+    let h = u.uae
+      ? `${FMT_WEEKDAY.format(now)}، ${ar(u.day)} ${HIJRI_MONTHS[u.month - 1]} ${ar(u.year)}`   // the UAE calendar's day
+      : new Intl.DateTimeFormat('ar-SA-u-ca-islamic-umalqura-nu-' + NU,{
+          timeZone: CONFIG.timezone, weekday:'long', day:'numeric', month:'long', year:'numeric'
+        }).format(now);
     h = h.replace(/\s*هـ\s*$/,'').replace(/،\s*$/,'');
     setText(document.getElementById('hijri'), h + ' هـ');
   }catch(e){}
@@ -859,6 +885,9 @@ function buildPrayers(t){
 
 // Umm al-Qura: Fajr at 18.5°, Maghrib at sunset, Isha 90 min after Maghrib (120 in Ramadan),
 // Asr at shadow factor 1. Same method as Aladhan's method 4, so the offline times match to a minute or two.
+// The UAE (#tz=Asia/Dubai): Fajr at 18°, Isha at 18.3°, then fixed minutes (fajr -1, sunrise -4, dhuhr +2, maghrib +3,
+// isha -1), fitted to the official 1448 calendar of Abu Dhabi (Sheikh Zayed Grand Mosque Centre): within a minute on every day.
+const UAE_PRAYERS = CONFIG.timezone === 'Asia/Dubai';
 function computePrayers(){
   const p = riyadhParts(), lat = CONFIG.latitude, lng = CONFIG.longitude;
   const tz = Math.round((Date.UTC(p.y,p.mo-1,p.d,p.h,p.mi,p.s) - Date.now()) / 60000) / 60;
@@ -885,11 +914,13 @@ function computePrayers(){
     const a = -deg(Math.atan(1/(1 + Math.tan(rad(Math.abs(lat - d))))));
     return angleTime(a, t, false);
   };
-  const adj = h => h + tz - lng/15;
-  const fajr = adj(angleTime(18.5, 5, true)), dhuhr = adj(noon(12)), asr = adj(asrTime(13));
-  const sunrise = adj(angleTime(.833, 6, true));
-  const maghrib = adj(angleTime(.833, 18, false));
-  const isha = maghrib + (hijriMonthNow() === 9 ? 120 : 90)/60;
+  const adj = (h, min = 0) => h + tz - lng/15 + min/60;
+  const U = UAE_PRAYERS;
+  const fajr = U ? adj(angleTime(18, 5, true), -1) : adj(angleTime(18.5, 5, true));
+  const dhuhr = adj(noon(12), U ? 2 : 0), asr = adj(asrTime(13));
+  const sunrise = adj(angleTime(.833, 6, true), U ? -4 : 0);
+  const maghrib = adj(angleTime(.833, 18, false), U ? 3 : 0);
+  const isha = U ? adj(angleTime(18.3, 18, false), -1) : maghrib + (hijriMonthNow() === 9 ? 120 : 90)/60;
   const hm = h => { const m = Math.round(fix(h, 24)*60) % 1440; return pad(Math.floor(m/60)) + ':' + pad(m%60); };
   // Isha is Maghrib plus its delay and stays an absolute time: past midnight (a late Maghrib at a high latitude) it reads «24:30», not an
   // hour that has already gone today (the rest of the page counts minutes from midnight, so 1470 is after 1439)
@@ -898,6 +929,13 @@ function computePrayers(){
 }
 
 async function loadPrayers(){
+  if(UAE_PRAYERS){   // Aladhan has no method that matches the UAE calendar: computed here
+    try{ buildPrayers(computePrayers()); }catch(_){}
+    tickPrayer();
+    tickOccasion();
+    renderPanel(false, 'prayers', 'adhkar', 'prayerrow');
+    return;
+  }
   const p = riyadhParts();
   const url = `https://api.aladhan.com/v1/timings/${pad(p.d)}-${pad(p.mo)}-${p.y}`
             + `?latitude=${CONFIG.latitude}&longitude=${CONFIG.longitude}`
@@ -1058,8 +1096,7 @@ let OCC_CACHE = {day:'', val:null};
 function occasionNow(){
   const dayKey = FMT_DATE.format(new Date());
   if(OCC_CACHE.day === dayKey) return OCC_CACHE.val;
-  const fmt = new Intl.DateTimeFormat('en-u-ca-islamic-umalqura',{timeZone:CONFIG.timezone,year:'numeric',month:'numeric',day:'numeric'});
-  const hijri = d => fmt.formatToParts(d).reduce((a,x) => (a[x.type] = +x.value.replace(/[^0-9]/g,''), a), {});
+  const hijri = hijriOf;
   const base = Date.now();
   let val = null, found = {};
   for(let i = 0; i < 400 && !val; i++){
@@ -1082,10 +1119,7 @@ function occasionNow(){
 }
 
 function hijriMonthNow(){
-  try{
-    return +new Intl.DateTimeFormat('en-u-ca-islamic-umalqura',{timeZone:CONFIG.timezone,month:'numeric'})
-      .format(new Date()).replace(/[^0-9]/g,'');
-  }catch(e){ return 0; }
+  try{ return hijriOf().month || 0; }catch(e){ return 0; }
 }
 function tickOccasion(){
   const elL=document.getElementById('occ-label'),
@@ -1825,13 +1859,12 @@ function fastReasons(hm, hd, wd){
   if(hm === 10 && hd >= 2) out.push('shawwal');
   return out;
 }
-const FAST_HIJRI = new Intl.DateTimeFormat('en-u-ca-islamic-umalqura', {timeZone:'UTC', month:'numeric', day:'numeric'});
 // The next day to fast from `now`: {key, days (0 = today), day (Hijri), wd, date (UTC noon)}, or null.
 function fastingNext(now){
   const p = riyadhParts(now), base = Date.UTC(p.y, p.mo - 1, p.d, 12);
   for(let i = 0; i < 12; i++){
     const date = new Date(base + i*86400000);
-    const h = FAST_HIJRI.formatToParts(date).reduce((a, x) => (a[x.type] = +x.value.replace(/[^0-9]/g, ''), a), {});
+    const h = hijriOfDay(date.toISOString().slice(0, 10));   // date: the city's day at UTC noon
     const why = fastReasons(h.month, h.day, date.getUTCDay());
     if(!why.length || (i === 0 && p.h >= FAST_TODAY_UNTIL && why[0] !== 'ramadan')) continue;
     return {key:why[0], days:i, day:h.day, wd:date.getUTCDay(), date};

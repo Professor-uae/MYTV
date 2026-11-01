@@ -16,8 +16,6 @@ import java.util.List;
 
 /** Everything the user picks in settings, and the dashboard URL built from it. */
 final class Prefs {
-    static final String TZ = "Asia/Riyadh";
-
     // TheSportsDB id, Arabic name; more teams come from the in-app search
     static final String[][] TEAM_PRESETS = {
         {"136013", "الهلال"}, {"136137", "المنتخب السعودي"},
@@ -124,15 +122,15 @@ final class Prefs {
         sp.edit().putString("cityName", name).putString("cityLat", lat).putString("cityLon", lon).putString("cityTz", tz).apply();
     }
 
-    /** The time zone the page shows: Asia/Riyadh for a built-in (Saudi) city; a place of your own gets the one given
-     *  with it, else the TV's own. */
+    /** The time zone the page shows: a built-in city gets its region's (Asia/Riyadh in Saudi Arabia, Asia/Dubai in
+     *  the UAE); a place of your own gets the one given with it, else the TV's own. */
     String cityTz() {
         String own = sp.getString("cityTz", "");
         if (!own.isEmpty()) return own;
         String[] c = city();
         for (Cities.Region r : Cities.REGIONS)
             for (String[] x : r.cities)
-                if (x[0].equals(c[0]) && x[1].equals(c[1]) && x[2].equals(c[2])) return TZ;
+                if (x[0].equals(c[0]) && x[1].equals(c[1]) && x[2].equals(c[2])) return r.tz;
         return java.util.TimeZone.getDefault().getID();
     }
 

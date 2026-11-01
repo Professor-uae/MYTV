@@ -276,9 +276,9 @@ public class SettingsActivity extends Activity {
             }).show();
     }
 
-    // any place in Saudi Arabia, from Open-Meteo's GeoNames search
+    // any place in any country, from Open-Meteo's GeoNames search; each result brings its own time zone
     private void searchCity() {
-        ask("اسم المدينة أو القرية", q -> fetch("https://geocoding-api.open-meteo.com/v1/search?count=20&language=ar&countryCode=SA&name="
+        ask("اسم المدينة أو القرية", q -> fetch("https://geocoding-api.open-meteo.com/v1/search?count=20&language=ar&name="
             + Uri.encode(q), json -> {
                 JSONArray a = new JSONObject(json).optJSONArray("results");
                 if (a == null || a.length() == 0) { toast("لا توجد نتائج"); return; }
@@ -290,8 +290,9 @@ public class SettingsActivity extends Activity {
                     lats[i] = String.valueOf(c.optDouble("latitude"));
                     lons[i] = String.valueOf(c.optDouble("longitude"));
                     zones[i] = c.optString("timezone", "");   // the place's own; empty: the TV's (Prefs.cityTz)
-                    String region = c.optString("admin1", "");
-                    rows[i] = region.isEmpty() ? names[i] : names[i] + "  ·  " + region;
+                    String region = c.optString("admin1", ""), country = c.optString("country", "");
+                    String where = region.isEmpty() ? country : country.isEmpty() ? region : region + "، " + country;
+                    rows[i] = where.isEmpty() ? names[i] : names[i] + "  ·  " + where;
                 }
                 new Dlg(this).setTitle("اختر المكان")
                     .setItems(rows, (d, i) -> { prefs.setCity(names[i], lats[i], lons[i], zones[i]); render(); }).show();

@@ -28,7 +28,7 @@ Navigate with the remote, or `adb shell input keyevent DPAD_DOWN|DPAD_UP|DPAD_CE
 |---|---|---|
 | A1 | Open the app from the TV launcher | Banner «شاشة تلفزيونك»; settings list opens, right-to-left, first row focused |
 | A2 | Move through every row with D-pad | Every row focusable and highlighted; nothing unreachable |
-| A3 | المدينة → open | First item «بحث عن مدينة أو قرية…», then 13 regions with counts |
+| A3 | المدينة → open | First item «بحث عن مدينة أو قرية…», then 13 Saudi regions and «الإمارات العربية المتحدة», with counts; a UAE city goes by Asia/Dubai |
 | A4 | Region «منطقة الرياض» → pick «الخرج» | Dialog closes, row shows «المدينة: الخرج» |
 | A5 | المدينة → search → type `ابها` or `Abha` | Results list from the internet; pick one → row updates |
 | A6 | المدينة → search → type `zzzzqq` | Toast «لا توجد نتائج» |

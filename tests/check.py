@@ -64,7 +64,11 @@ for f in tracked("*.json"):
 
 # ---- photos: every listed photo exists, is 1920x1080, has a credit; nothing unlisted
 index = json.loads((ROOT / "photos/index.json").read_text(encoding="utf-8"))
-listed = {p["f"] for p in index}
+check("photos: each index entry is a file (f) or an Unsplash link (u), with a credit, for no country or the UAE (r)",
+      all((p.get("f") or str(p.get("u", "")).startswith("https://images.unsplash.com/photo-")) and p.get("c")
+          and p.get("r", "uae") == "uae" for p in index), [p for p in index if not (p.get("f") or p.get("u"))][:3])
+linked = [p["u"].split("?")[0].rsplit("/", 1)[1] for p in index if p.get("u")]
+listed = {p["f"] for p in index if p.get("f")}
 on_disk = {p.name for p in (ROOT / "photos").glob("*.jpg")}
 check("photos: every index entry has a file", listed <= on_disk, sorted(listed - on_disk))
 check("photos: no file missing from the index", on_disk <= listed, sorted(on_disk - listed))
@@ -73,6 +77,8 @@ check("photos: all 1920x1080", not bad, bad)
 credits = (ROOT / "docs/PHOTO-CREDITS.md").read_text(encoding="utf-8")
 check("photos: every photo credited in docs/PHOTO-CREDITS.md", all(f in credits for f in on_disk),
       [f for f in on_disk if f not in credits])
+check("photos: every Unsplash link credited in docs/PHOTO-CREDITS.md", all(u in credits for u in linked),
+      [u for u in linked if u not in credits])
 bundled = json.loads((ROOT / "assets/backgrounds/backgrounds.json").read_text(encoding="utf-8"))
 check("bundled backgrounds exist", all((ROOT / "assets/backgrounds" / b["file"]).is_file() for b in bundled))
 

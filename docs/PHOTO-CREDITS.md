@@ -98,3 +98,31 @@ From [Unsplash](https://unsplash.com), under the [Unsplash License](https://unsp
 | `photos/efzvMAIpfWY.jpg` | NEOM | [unsplash](https://unsplash.com/photos/a-couple-of-people-that-are-standing-in-the-dirt-efzvMAIpfWY) |
 | `photos/_Fmibx42BVU.jpg` | YUNUS A KHALIFAH | [unsplash](https://unsplash.com/photos/panoramic-photography-of-desert-during-daytime-_Fmibx42BVU) |
 | `photos/rkRYbmPuhOE.jpg` | Stijn te Strake | [unsplash](https://unsplash.com/photos/birds-eye-photography-of-city-rkRYbmPuhOE) |
+
+## UAE set (`"r": "uae"` in `photos/index.json`)
+
+Shown instead of the hosted set above when the city is in the UAE (the page's `CONFIG.market` is `uae`).
+
+The owner's own photos of Abu Dhabi, in `photos/`:
+`abudhabi-01.jpg` `abudhabi-02.jpg` (cropped to 1920x1080)
+
+Loaded straight from Unsplash's image service (not copied into the repo), under the [Unsplash License](https://unsplash.com/license):
+
+| Image | Photographer | Source |
+|---|---|---|
+| `photo-1512632578888-169bbbc64f33` | David Rodrigo | [unsplash](https://unsplash.com/photos/sheikh-zayed-grand-mosque-in-abu-dhabi-kZ1zThg6G40) |
+| `photo-1668060742975-9a462159b0bd` | Karthik B K | [unsplash](https://unsplash.com/photos/a-city-skyline-with-a-body-of-water-in-the-foreground-J1dkREbfefU) |
+| `photo-1762687508992-effc04be64b8` | Jean Carlo Emer | [unsplash](https://unsplash.com/photos/modern-city-skyline-with-palm-trees-and-a-lake-Pw4qJtaIWVc) |
+| `photo-1603565095944-2a6f33bb517c` | Nick Fewings | [unsplash](https://unsplash.com/photos/city-skyline-across-the-sea-during-daytime-hNg-zO_mHQk) |
+| `photo-1613835579153-9bfe32e50da6` | Imtiyaz Ali | [unsplash](https://unsplash.com/photos/city-skyline-across-body-of-water-during-daytime-tohb5lsxAB8) |
+| `photo-1624317937315-0ced8736c9e9` | Kevin JD | [unsplash](https://unsplash.com/photos/city-skyline-during-night-time-S5SQzWdUhoE) |
+| `photo-1758952327505-d3917528173a` | Po-Hsuan Huang | [unsplash](https://unsplash.com/photos/modern-city-skyline-with-distinctive-architecture-on-the-coast-hCzaglUEQxw) |
+| `photo-1661630802951-9bf877543041` | Leon Macapagal | [unsplash](https://unsplash.com/photos/a-city-skyline-at-night-6gg5bY6U0lE) |
+| `photo-1587421890935-5fb13a3beccc` | Nazar Skalatsky | [unsplash](https://unsplash.com/photos/white-concrete-building-near-body-of-water-during-daytime-xeFDlGub15M) |
+| `photo-1670166151106-6b44797e4c4f` | janith devinda | [unsplash](https://unsplash.com/photos/a-city-skyline-with-a-park-NK_P83I72qc) |
+| `photo-1672324016837-4b803c38fc95` | Yan Ma | [unsplash](https://unsplash.com/photos/a-large-building-with-a-dome-on-top-of-it-next-to-a-body-of-water-OYbl248asqQ) |
+| `photo-1592678725254-37e8a2653e6b` | Dovlet Hojayev | [unsplash](https://unsplash.com/photos/white-and-brown-dome-building-under-blue-sky-during-daytime-mrsxNu1molw) |
+| `photo-1651467606797-e1c660cf3fda` | Ahmed Aldaie | [unsplash](https://unsplash.com/photos/burj-khalifa-skyline-in-dubai-aKj9uDanF18) |
+| `photo-1680838730692-b08ee8fe4fcb` | Ahmed Aldaie | [unsplash](https://unsplash.com/photos/a-picture-frame-in-the-middle-of-a-city-c9YUTwediI8) |
+| `photo-1590075865003-e48277faa558` | Nick Fewings | [image](https://images.unsplash.com/photo-1590075865003-e48277faa558) |
+| `photo-1734009775179-07f428483783` | Saeed Alsoomehi | [image](https://images.unsplash.com/photo-1734009775179-07f428483783) |

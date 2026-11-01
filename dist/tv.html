@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <!-- the build: UTC time (YYYYMMDDHHMMSS) of the newest commit of the page's sources, put in by src/build.py. The app loads the page with the newer stamp (its own
      copy or a downloaded one), never by file time, and does not keep a download whose stamp is older than its own (Updater, PageStamp). -->
-<meta name="urtv-build" content="20261031101502">
+<meta name="urtv-build" content="20261101055431">
 <title>شاشة تلفزيونك</title>
 <style>
   @font-face{font-family:'Thmanyah';font-weight:300;font-style:normal;font-display:block;src:url("https://raw.githubusercontent.com/Professor-uae/MYTV/master/assets/fonts/Thmanyah-Light.woff2") format("woff2")}
@@ -2983,7 +2983,14 @@ function pixelShift(){
 // Background photos: the hosted set in photos/ (photos/index.json in the repo). A hosted photo is used only
 // once it has loaded; offline, or if it fails, a bundled one is shown, so the screen is never empty.
 const PHOTO_BASE = 'https://raw.githubusercontent.com/Professor-uae/MYTV/master/photos/';
-let REMOTE_BGS = (()=>{ try{ return JSON.parse(localStorage.getItem('photoIndex') || '[]'); }catch(e){ return []; } })();
+// An entry is a file in photos/ (f) or a direct Unsplash link (u). r: the country it is for ("uae"); none: Saudi Arabia.
+// A city gets its own country's photos (CONFIG.market), or the whole list while its country has none.
+function photosForHere(list){
+  const ok = (Array.isArray(list) ? list : []).filter(p => p && (p.f || p.u));
+  const mine = ok.filter(p => (p.r || 'sa') === CONFIG.market);
+  return mine.length ? mine : ok;
+}
+let REMOTE_BGS = (()=>{ try{ return photosForHere(JSON.parse(localStorage.getItem('photoIndex') || '[]')); }catch(e){ return []; } })();
 
 // The owner's own photos: the app answers OWN_BASE N.jpg (1..CONFIG.own) from its own folder, never from the network.
 const OWN_BASE = 'https://own.urtv.invalid/';
@@ -2995,10 +3002,10 @@ async function loadPhotoIndex(){
   try{
     const r = await fetchT(PHOTO_BASE + 'index.json', 15000);
     if(!r.ok) return;
-    const list = (await r.json()).filter(p => p && p.f);
+    const all = await r.json(), list = photosForHere(all);
     if(list.length){
       REMOTE_BGS = list;
-      try{ localStorage.setItem('photoIndex', JSON.stringify(list)); }catch(e){}
+      try{ localStorage.setItem('photoIndex', JSON.stringify(all)); }catch(e){}   // all of it: the city may change
     }
   }catch(e){}
 }

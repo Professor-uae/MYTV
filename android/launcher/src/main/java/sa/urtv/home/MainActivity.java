@@ -27,6 +27,7 @@ import android.media.tv.TvInputManager;
 import android.database.Cursor;
 import android.net.Uri;
 import android.net.wifi.WifiManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -167,9 +168,17 @@ public class MainActivity extends Activity {
         pf.addAction(Intent.ACTION_PACKAGE_CHANGED);
         pf.addDataScheme("package");
         registerReceiver(packages, pf);
-        registerReceiver(dockChanged, new IntentFilter(Dock.CHANGED));
-        registerReceiver(sleepChanged, new IntentFilter(SleepTimer.CHANGED));
-        registerReceiver(nowPlayingChanged, new IntentFilter(NowPlaying.CHANGED));
+        registerOwn(dockChanged, Dock.CHANGED);
+        registerOwn(sleepChanged, SleepTimer.CHANGED);
+        registerOwn(nowPlayingChanged, NowPlaying.CHANGED);
+    }
+
+    // For the app's own broadcasts. Android 14 (targetSdk 34) stops the app at start if a receiver for a
+    // non-system broadcast doesn't say whether other apps may reach it (seen on a Xiaomi MiTV, Android 14).
+    private void registerOwn(BroadcastReceiver r, String action) {
+        IntentFilter f = new IntentFilter(action);
+        if (Build.VERSION.SDK_INT >= 33) registerReceiver(r, f, Context.RECEIVER_NOT_EXPORTED);
+        else registerReceiver(r, f);
     }
 
     @Override

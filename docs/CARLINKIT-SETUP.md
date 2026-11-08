@@ -36,6 +36,25 @@
 
    > اقرأ `docs/CARLINKIT-SETUP.md` من القسم «For Claude Code» واتبعه. أنت تشتغل داخل جهاز Carlinkit نفسه.
 
+## بديل: من تلفون أندرويد
+
+إذا الكتابة على شاشة السيارة صعبة، شغّل Claude من تلفونك بدل الجهاز:
+
+1. شغّل **الهوتسبوت** في التلفون، وخلّ جهاز Carlinkit يتصل فيه.
+2. على **الجهاز**: شغّل Wireless debugging (الخطوة ٢ فوق) وشوف الـ IP والمنفذ في أعلى الصفحة.
+3. على **التلفون**: نزّل Termux وسوّ الخطوة ٣ فوق (nodejs, git, android-tools, Claude Code).
+4. اربط من التلفون بنفس الخطوة ٤ بس بـ IP الجهاز بدل `localhost`:
+   ```
+   adb pair <IP الجهاز>:<منفذ الاقتران> <الكود>
+   adb connect <IP الجهاز>:<المنفذ>
+   adb devices
+   ```
+5. شغّل Claude (الخطوة ٥) والصق له:
+
+   > اقرأ `docs/CARLINKIT-SETUP.md` من القسم «For Claude Code» واتبعه. أنت تشتغل من تلفوني، والجهاز على `<IP>:<المنفذ>` بدل `localhost`.
+
+كيبل التلفون اللي في الجهاز (لـ CarPlay / Android Auto) ما ينفع لـ adb، لازم الاتصال يكون عن طريق الواي فاي.
+
 </div>
 
 ---
@@ -43,7 +62,7 @@
 ## For Claude Code
 
 You run inside Termux **on the Carlinkit box itself** (Android, device name X7, about page «AutoKit-TBox», SIM from du).
-You reach the system through `adb` connected to `localhost`. Talk to me in Arabic; keep commands in English.
+You reach the system through `adb` connected to `localhost` (or `<box IP>:<port>` if I said you run on my phone; then use that serial everywhere below instead of `localhost`). Talk to me in Arabic; keep commands in English.
 The box sits in a moving car: keep every step short, and never ask me to do something long on the screen while driving.
 
 ### Hard rules

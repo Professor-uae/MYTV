@@ -117,9 +117,9 @@ public class SaverReceiver extends BroadcastReceiver {
             if (lat != null && lon != null) {
                 if (!lat.matches("-?\\d{1,2}(\\.\\d+)?") || !lon.matches("-?\\d{1,3}(\\.\\d+)?"))
                     return "error: lat/lon must be numbers like 25.86 / 43.49";
-                // a place of your own has its own time zone, and a missing one would be guessed (the TV's, Riyadh's): ask for it
+                // a place of your own has its own time zone, and a missing one would be guessed (the TV's): ask for it
                 if (tz == null && !inList(name))
-                    return "error: add the time zone for a place that is not in the list, e.g. --es tz Asia/Riyadh or Asia/Kuwait";
+                    return "error: add the time zone for a place that is not in the list, e.g. --es tz Asia/Dubai or Asia/Kuwait";
                 city = new String[] {name, lat, lon};
             } else {
                 for (Cities.Region r : Cities.REGIONS) for (String[] x : r.cities) if (x[0].equals(name)) city = x;

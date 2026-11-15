@@ -31,7 +31,7 @@ final class PrayerTimes {
     final long[] at = new long[6];
     final String[] clock = new String[6];
     /** the city's zone these times belong to, local midnight of their day, and whether it is Ramadan */
-    private String tz = "Asia/Riyadh";
+    private String tz = "Asia/Dubai";
     private long day0;
     private boolean ramadan;
     /** «تعديل وقت الصلاة»: minutes added to PRAYERS[k] (PrayerAdjust); the sunrise is never moved */

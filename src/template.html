@@ -47,7 +47,7 @@
   html.theme-green{--gold:#7FD1A8;--gold-2:#6BC597;--gold-3:#93DDB7;--gold-hi:#D8F6E6;--gold-rgb:127,209,168}
   html.theme-silver{--gold:#D5DBE3;--gold-2:#C3CAD4;--gold-3:#E1E6EC;--gold-hi:#FFFFFF;--gold-rgb:213,219,227}
   html.theme-blue{--gold:#8FC4F0;--gold-2:#7AB6E6;--gold-3:#A6D3F5;--gold-hi:#E2F2FF;--gold-rgb:143,196,240}
-  /* National Day and Founding Day (see nationalNow()): the gold accents turn Saudi green, light enough to read on the dark photos */
+  /* The national days (see nationalNow()): the gold accents turn flag green, light enough to read on the dark photos */
   html.nat{--gold:#34B872;--gold-2:#2FAE6B;--gold-3:#4CCB88;--gold-hi:#CDF3DD;--gold-rgb:52,184,114}
   *{margin:0;padding:0;box-sizing:border-box}
   /* Hidden until the clock, the saved panels and the photo are in place, then one fade in: no half-built
@@ -558,7 +558,7 @@
 
     <div class="markets">
       <div class="wxline"><span class="wxt" id="wx-temp"></span><span class="wxd" id="wx-desc"></span></div>
-      <div class="wxsub"><span id="wx-city">الرياض</span><span class="wxr" id="wx-range"></span></div>
+      <div class="wxsub"><span id="wx-city">أبوظبي</span><span class="wxr" id="wx-range"></span></div>
       <div class="wxsub wxx"><span id="wx-feels"></span><span id="wx-hum"></span><span id="wx-uv"></span></div>
       <div class="rule l"></div>
       <div class="mk">
@@ -574,7 +574,7 @@
       <div class="clock">
         <span class="ampm" id="ck-ap">—</span><span class="d" id="ck-h">--</span><span class="sep">:</span><span class="d" id="ck-m">--</span>
       </div>
-      <div class="subline"><span class="dot"></span><span id="clock-sub">بتوقيت الرياض</span></div>
+      <div class="subline"><span class="dot"></span><span id="clock-sub">بتوقيت أبوظبي</span></div>
       <div class="ystrip" id="ystrip" hidden></div>
     </div>
 
@@ -615,7 +615,7 @@
 </main>
 
 <script>
-// daily background: one photo per Riyadh day, deterministic
+// daily background: one photo per day in the city, deterministic
 const BGS = [
 __BG_SET__
 ];
@@ -623,18 +623,18 @@ __BG_SET__
 const _Q = new URLSearchParams((location.hash || '').replace(/^#/, ''));
 const _list = k => (_Q.get(k) || '').split(',').map(x=>x.trim()).filter(Boolean);
 const _num = (k, d) => { const v = parseFloat(_Q.get(k)); return isNaN(v) ? d : v; };
-// the city's time zone, #tz=: the clock, prayers, matches and dates all go by it; one this browser does not know is Riyadh
+// the city's time zone, #tz=: the clock, prayers, matches and dates all go by it; one this browser does not know is Abu Dhabi's
 const _tzOk = z => { try{ new Intl.DateTimeFormat('en',{timeZone:z}); return true; }catch(e){ return false; } };
 // the cards a slot can show (Prefs.PANELS in the app is the same list); «none» is the absence of one
 const CARD_KINDS = ['shows','prayers','forecast','hourly','prayerrow','matches','verse','wisdom','adhkar','stocks','tasks','year','smart','today'];
 const CONFIG = {
-  city: (c => /^abu\s*dhabi$/i.test(c) ? 'أبوظبي' : c)(_Q.get('city') || 'الرياض'),
+  city: (c => /^abu\s*dhabi$/i.test(c) ? 'أبوظبي' : c)(_Q.get('city') || 'أبوظبي'),
   // the market of the markets and the stocks: uae (Abu Dhabi, Dubai…) or sa (Tadawul); by the city unless #market= says
   market: _Q.get('market') === 'sa' ? 'sa' : _Q.get('market') === 'uae' ? 'uae'
-          : (/abu\s*dhabi|dubai|sharjah|ajman|al\s*ain|ras\s*al|fujairah|أبوظبي|ابوظبي|دبي|الشارقة|عجمان|العين|رأس الخيمة|الفجيرة/i.test(_Q.get('city') || 'الرياض') ? 'uae' : 'sa'),   // the English name the TV may have stored shows in Arabic
-  latitude: _num('lat', 24.7136),
-  longitude: _num('lon', 46.6753),
-  timezone: _tzOk(_Q.get('tz') || 'Asia/Riyadh') ? (_Q.get('tz') || 'Asia/Riyadh') : 'Asia/Riyadh',
+          : (/abu\s*dhabi|dubai|sharjah|ajman|al\s*ain|ras\s*al|fujairah|أبوظبي|ابوظبي|دبي|الشارقة|عجمان|العين|رأس الخيمة|الفجيرة/i.test(_Q.get('city') || 'أبوظبي') ? 'uae' : 'sa'),   // the English name the TV may have stored shows in Arabic
+  latitude: _num('lat', 24.4539),
+  longitude: _num('lon', 54.3773),
+  timezone: _tzOk(_Q.get('tz') || 'Asia/Dubai') ? (_Q.get('tz') || 'Asia/Dubai') : 'Asia/Dubai',
   prayerMethod: 4,
   // followed teams in priority order: #teams=id,id,... (up to 20); older builds send team1/team2
   teamIds: (_Q.has('teams') ? _Q.get('teams').split(',')
@@ -689,7 +689,7 @@ const CONFIG = {
   markets: (l => l.length ? l : ['tasi','spx','btc'])(
     _list('markets').filter((k, i, a) => ['tasi','aramco','spx','btc','gold','silver','xrp'].includes(k) && a.indexOf(k) === i).slice(0, 4)),
   mkStyle: _Q.get('mkstyle') === 'prices' ? 'prices' : 'arrows',
-  // the national days (23 September, 22 February): #national=auto (the default) or off
+  // the national days (the UAE's 2 December; Saudi Arabia's 23 September and 22 February): #national=auto (the default) or off
   national: _Q.get('national') === 'off' ? 'off' : 'auto',
   // the stocks card's watchlist: #stocks=2222,1120,AAPL,NVDA (up to 8; 4 digits = a Tadawul code, letters = a US ticker)
   stocks: _list('stocks').map(x => x.toUpperCase()).filter((x, i, a) => /^(\d{4}|[A-Z][A-Z.\-]{0,11})$/.test(x) && a.indexOf(x) === i).slice(0, 8),
@@ -789,7 +789,7 @@ function hijriOfDay(key){
 }
 const hijriOf = (d = new Date()) => hijriOfDay(FMT_DATE.format(d));   // the Hijri date of that moment's day in the city
 
-// how far the city's clock is ahead of UTC at that moment, in ms (Riyadh +3 h all year; Cairo changes with summer time)
+// how far the city's clock is ahead of UTC at that moment, in ms (Abu Dhabi +4 h and Riyadh +3 h all year; Cairo changes with summer time)
 function tzOffsetMs(ms){
   const p = riyadhParts(new Date(ms));
   return Date.UTC(p.y, p.mo - 1, p.d, p.h, p.mi, p.s) - Math.floor(ms / 1000) * 1000;
@@ -818,9 +818,12 @@ function tickClock(){
   if(CONFIG.yearStrip) renderYearStrip();   // the day may have turned; the clock's width may have changed
 }
 
-// National Day (23 September, shown 21-25) and Founding Day (22 February, shown 20-24), by the Riyadh date.
+// The national days of the city's country, by its date: the UAE (#market=uae, the default) has Eid Al Etihad
+// (2 December, shown 30 November-4 December); Saudi Arabia its National Day (23 September) and Founding Day (22 February).
 // n = the year count shown; today = the day itself. Null when off or outside the days.
-const NATIONAL = [
+const NATIONAL = CONFIG.market === 'uae' ? [
+  {mo:12, d:2, name:'عيد الاتحاد', short:'عيد الاتحاد', since:1971, unit:''},
+] : [
   {mo:9, d:23, name:'اليوم الوطني السعودي', short:'اليوم الوطني', since:1930, unit:''},
   {mo:2, d:22, name:'يوم التأسيس', short:'يوم التأسيس', since:1727, unit:' عامًا'},
 ];
@@ -1842,7 +1845,7 @@ const FAST_WHEN = {
   few:n => 'بعد ' + ar(n) + ' أيام', many:n => 'بعد ' + ar(n) + ' يومًا',
   ramadanDay:n => 'اليوم ' + ar(n) + ' من رمضان',
 };
-const FAST_TODAY_UNTIL = 18;   // from this hour (Riyadh) today's fast is behind us: look from tomorrow on
+const FAST_TODAY_UNTIL = 18;   // from this hour (the city's) today's fast is behind us: look from tomorrow on
 
 // What is recommended on a Hijri day (month hm, day hd, weekday wd, 0 = Sunday), best reason first.
 // Always [] on the days fasting is forbidden: the two Eids and the three days of Tashreeq.
@@ -1872,7 +1875,7 @@ function fastingNext(now){
   return null;
 }
 
-// days from today (Riyadh) to the countdown's date, or null: none set, or it has passed
+// days from today (in the city) to the countdown's date, or null: none set, or it has passed
 function countdownDays(){
   if(!CONFIG.cd) return null;
   const p = riyadhParts(), n = (Date.parse(CONFIG.cd + 'T00:00:00Z') - Date.UTC(p.y, p.mo - 1, p.d)) / 86400000;
@@ -2441,7 +2444,7 @@ function fitCards(){
   }
 }
 
-// the year's numbers, shared by the card and the strip: the Gregorian year in Riyadh time, its days, today's number
+// the year's numbers, shared by the card and the strip: the Gregorian year in the city's time, its days, today's number
 function yearFacts(){
   const p = riyadhParts(new Date(Date.now())), y = p.y;
   const total = (y % 4 === 0 && y % 100 !== 0) || y % 400 === 0 ? 366 : 365;
@@ -2450,7 +2453,7 @@ function yearFacts(){
   return {y, total, day, pct, text: `اليوم <b>${ar(day)}</b> من ${ar(total)} · ${ar(pct)}${LATIN ? '%' : '٪'}`};
 }
 
-// ---- «السنة»: a dot for every day of this Gregorian year (Riyadh time). Drawn again only when the day changes.
+// ---- «السنة»: a dot for every day of this Gregorian year (the city's time). Drawn again only when the day changes.
 function yearCard(card){
   const {y, total, day, pct, text} = yearFacts();
   const COLS = 36, ROWS = Math.ceil(total / COLS), PITCH = 10, R = 3.2;
@@ -2821,7 +2824,7 @@ function quoteOfDay(card){
   return {title:'حديث اليوم', rows:[`<li class="quote hadith${quoteSize(h.parts.reduce((n, [, t]) => n + t.length, 0))}">${body}</li>`, `<li class="src">${esc(h.source)}</li>`]};
 }
 
-// «حكمة اليوم»: one saying a day by the Riyadh day number, proverbs and classical sayings only (assets/shared/wisdom.json)
+// «حكمة اليوم»: one saying a day by the city's day number, proverbs and classical sayings only (assets/shared/wisdom.json)
 const WISDOM = __WISDOM__;
 function wisdomOfDay(){
   if(!WISDOM.length) return quoteOfDay();

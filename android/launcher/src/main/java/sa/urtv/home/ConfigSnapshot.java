@@ -35,7 +35,7 @@ final class ConfigSnapshot {
                 if (b >= 0 && "0".equals(cur.getString(b))) bar = false;
             }
         } catch (RuntimeException ignored) {
-            // the screensaver is missing or signed with another key: the defaults (Riyadh, on)
+            // the screensaver is missing or signed with another key: the defaults (Abu Dhabi, on)
         }
         return new ConfigSnapshot(fragment, greeting, bar);
     }

@@ -144,7 +144,7 @@ final class Greeting {
     /** The screensaver's settings this line needs. */
     private static final class Config {
         boolean on = true;   // an older screensaver does not say: on, the default
-        String city = "الرياض", lat = "24.6877", lon = "46.7219", tz = "Asia/Riyadh";
+        String city = "أبوظبي", lat = "24.4539", lon = "54.3773", tz = "Asia/Dubai";
         boolean latin;
         String family = GreetingText.FAMILY_DEFAULT;   // the name the greetings end with (#family=)
 
@@ -169,7 +169,7 @@ final class Greeting {
                     }
                 }
             } catch (Exception e) {
-                // the screensaver is missing or signed with another key: the defaults (Riyadh, on)
+                // the screensaver is missing or signed with another key: the defaults (Abu Dhabi, on)
             }
             return s;
         }

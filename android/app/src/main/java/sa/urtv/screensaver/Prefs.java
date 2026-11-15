@@ -112,9 +112,12 @@ final class Prefs {
 
     Prefs(Context c) { ctx = c; sp = c.getSharedPreferences("settings", Context.MODE_PRIVATE); }
 
-    /** {name, latitude, longitude}; Riyadh until the user picks */
+    /** The city until the user picks one: Abu Dhabi, a built-in city (Cities), so its zone is Asia/Dubai and its market the UAE. */
+    static final String[] DEFAULT_CITY = {"أبوظبي", "24.4539", "54.3773"};
+
+    /** {name, latitude, longitude}; Abu Dhabi until the user picks */
     String[] city() {
-        return new String[] {sp.getString("cityName", "الرياض"), sp.getString("cityLat", "24.6877"), sp.getString("cityLon", "46.7219")};
+        return new String[] {sp.getString("cityName", DEFAULT_CITY[0]), sp.getString("cityLat", DEFAULT_CITY[1]), sp.getString("cityLon", DEFAULT_CITY[2])};
     }
     void setCity(String name, String lat, String lon) { setCity(name, lat, lon, ""); }
     /** tz: the place's own time zone, "" for a built-in city or when only the TV's is known (see cityTz) */

@@ -42,7 +42,7 @@
 
     <!-- Where the TV is, for the adhan times (Umm al-Qura). The city picked in the screensaver wins;
          these are the fallback when the screensaver is not installed. -->
-    <string name="latitude" translatable="false">24.6877</string>
-    <string name="longitude" translatable="false">46.7219</string>
-    <string name="timezone" translatable="false">Asia/Riyadh</string>
+    <string name="latitude" translatable="false">24.4539</string>
+    <string name="longitude" translatable="false">54.3773</string>
+    <string name="timezone" translatable="false">Asia/Dubai</string>
 </resources>

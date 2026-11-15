@@ -22,6 +22,19 @@ const check = (name, ok, detail = '') => {
 
 const browser = await chromium.launch(process.env.CHROMIUM ? { executablePath: process.env.CHROMIUM } : {});
 
+// The page's own default city is Abu Dhabi (Asia/Dubai, the UAE market). Most cases here were written for a Saudi city
+// and keep one as a fixture: every page link gets SA appended, so a city, lat, lon or tz the case gives itself still
+// wins (the page reads the first of each). A link with «nosa=1» is left alone: it sees the page's own defaults.
+const SA = 'city=' + encodeURIComponent('الرياض') + '&lat=24.7136&lon=46.6753&tz=Asia%2FRiyadh';
+{
+  const ctx = await browser.newContext(), proto = Object.getPrototypeOf(await ctx.newPage()), goto = proto.goto;
+  proto.goto = function (url, ...rest) {
+    if (typeof url === 'string' && /\.html#/.test(url) && !/[#&]nosa=1(&|$)/.test(url)) url += '&' + SA;
+    return goto.call(this, url, ...rest);
+  };
+  await ctx.close();
+}
+
 async function open(file, hash, { width = 1920, height = 1080, seed = true, net = null, now = null, tzId = null } = {}) {
   const ctx = await browser.newContext({ viewport: { width, height }, ...(tzId ? { timezoneId: tzId } : {}) });
   await ctx.route(/^https?:/, r => {
@@ -990,6 +1003,7 @@ for (const [width, height, style] of [[1920, 1080, ''], [1280, 720, ''], [960, 5
   };
   const lum = c => { const [R, G, B] = c.match(/\d+/g).slice(0, 3).map(x => { x /= 255; return x <= .03928 ? x / 12.92 : ((x + .055) / 1.055) ** 2.4; });
     return .2126 * R + .7152 * G + .0722 * B; };
+  const UAE = 'city=' + encodeURIComponent('أبوظبي') + '&lat=24.4539&lon=54.3773&tz=Asia%2FDubai';
   const cases = [   // [what, hash, UTC instant, look on?, line, middle panel is the greeting?]
     ['21 Sep 00:30 Riyadh (first shown hour)', '', '2026-09-20T21:30:00Z', true, 'اليوم الوطني السعودي ٩٦', false],
     ['22 Sep', '', '2026-09-22T09:00:00Z', true, 'اليوم الوطني السعودي ٩٦', false],
@@ -1007,12 +1021,19 @@ for (const [width, height, style] of [[1920, 1080, ''], [1280, 720, ''], [960, 5
     ['22 Feb with #national=off', 'national=off', '2026-02-22T09:00:00Z', false, '', false],
     ['23 Sep with #national=bogus (= auto)', 'national=bogus', '2026-09-23T09:00:00Z', true, 'اليوم الوطني السعودي ٩٦', true],
     ['23 Sep, latin digits', 'digits=latin', '2026-09-23T09:00:00Z', true, 'اليوم الوطني السعودي 96', true],
+    // the UAE (Abu Dhabi, the default): Eid Al Etihad, 2 December (shown 30 November-4 December); not the Saudi days
+    ['UAE: 30 Nov (first shown day)', UAE, '2026-11-30T09:00:00Z', true, 'عيد الاتحاد ٥٥', false],
+    ['UAE: 2 Dec itself', UAE, '2026-12-02T09:00:00Z', true, 'عيد الاتحاد ٥٥', true],
+    ['UAE: 5 Dec (over)', UAE, '2026-12-05T09:00:00Z', false, '', false],
+    ['UAE: 23 Sep is not theirs', UAE, '2026-09-23T09:00:00Z', false, '', false],
+    ['UAE: 2 Dec with #national=off', UAE + '&national=off', '2026-12-02T09:00:00Z', false, '', false],
+    ['Saudi city: 2 Dec is not theirs', '', '2026-12-02T09:00:00Z', false, '', false],
   ];
   for (const [what, hash, iso, on, line, greet] of cases) {
     const { p, ctx, errors } = await at(hash, iso);
     const r = await snap(p);
     check(`national: ${what}`, !errors.length && r.nat === on && r.line === line
-      && (r.big === 'كل عام والوطن بخير') === greet && (!greet || r.label === 'اليوم الوطني' || r.label === 'يوم التأسيس'),
+      && (r.big === 'كل عام والوطن بخير') === greet && (!greet || r.label === 'اليوم الوطني' || r.label === 'يوم التأسيس' || r.label === 'عيد الاتحاد'),
       JSON.stringify(r) + errors.join('; '));
     if (!on) check(`national: ${what}: gold accent unchanged`, r.gold === 'rgb(214, 175, 107)', r.gold);
     await ctx.close();
@@ -1598,11 +1619,20 @@ for (const [width, height] of [[461, 250], [1920, 1080], [960, 540]]) {   // lon
     digits(k.greg.match(/[٠-٩]+/)[0]) === digits(c.greg.match(/[٠-٩]+/)[0]) + 1 && digits(k.hijri.match(/[٠-٩]+/)[0]) === digits(c.hijri.match(/[٠-٩]+/)[0]) + 1,
     k.greg + ' / ' + c.greg + ' | ' + k.hijri + ' / ' + c.hijri);
   check('a day without a time starts at midnight in the city (Cairo +3 in July)', got['Africa/Cairo2026-07-01T12:00:00Z'].midnight === 3, got['Africa/Cairo2026-07-01T12:00:00Z'].midnight);
-  // no #tz=, or one the browser does not know: Riyadh, as always
-  for (const [hash, label] of [['city=الرس&lat=25.86&lon=43.49', 'no #tz='], ['city=الرس&lat=25.86&lon=43.49&tz=Nowhere/Land', 'an unknown #tz=']]) {
+  // no #tz=, or one the browser does not know: Abu Dhabi's, the page's default
+  for (const [hash, label] of [['nosa=1&city=الرس&lat=25.86&lon=43.49', 'no #tz='], ['nosa=1&city=الرس&lat=25.86&lon=43.49&tz=Nowhere/Land', 'an unknown #tz=']]) {
     const { p, ctx, errors } = await open('tv.html', hash, { now: '2026-01-15T12:00:00Z', tzId: 'America/New_York' });
     const r = await p.evaluate(() => ({ tz: CONFIG.timezone, h: document.getElementById('ck-h').textContent }));
-    check(`${label}: Asia/Riyadh, no errors`, r.tz === 'Asia/Riyadh' && /^[٠-٩]+$/.test(r.h) && !errors.length, JSON.stringify(r) + errors.join(';'));
+    check(`${label}: Asia/Dubai, no errors`, r.tz === 'Asia/Dubai' && /^[٠-٩]+$/.test(r.h) && !errors.length, JSON.stringify(r) + errors.join(';'));
+    await ctx.close();
+  }
+  // nothing in the link at all: Abu Dhabi, its zone and the UAE market
+  {
+    const { p, ctx, errors } = await open('tv.html', 'nosa=1', { now: '2026-01-15T12:00:00Z' });
+    const r = await p.evaluate(() => ({ city: CONFIG.city, lat: CONFIG.latitude, lon: CONFIG.longitude, tz: CONFIG.timezone, market: CONFIG.market,
+      wx: document.getElementById('wx-city').textContent }));
+    check('no settings at all: Abu Dhabi (24.4539, 54.3773, Asia/Dubai, the UAE market)', r.city === 'أبوظبي' && r.lat === 24.4539 && r.lon === 54.3773
+      && r.tz === 'Asia/Dubai' && r.market === 'uae' && !/الرياض/.test(r.wx) && !errors.length, JSON.stringify(r) + errors.join(';'));
     await ctx.close();
   }
 }

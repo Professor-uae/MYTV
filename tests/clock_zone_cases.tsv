@@ -10,8 +10,8 @@ at	2026-07-15T12:00:00Z	UTC	Africa/Cairo	15:00 15 differs	Cairo in summer time i
 at	2026-07-15T12:00:00Z	Asia/Riyadh	Africa/Cairo	15:00 15 same	in summer Cairo and Riyadh agree
 # parse: the screensaver's fragment -> city|zone
 parse	city=%D8%AF%D8%A8%D9%8A&lat=25.2&lon=55.3&tz=Asia%2FDubai&teams=	دبي|Asia/Dubai	a saved city and zone
-parse	city=%D8%AF%D8%A8%D9%8A&tz=Not%2FAZone	دبي|Asia/Riyadh	a zone nobody knows is Riyadh
-parse	lat=1&lon=2	|Asia/Riyadh	no city, no zone
+parse	city=%D8%AF%D8%A8%D9%8A&tz=Not%2FAZone	دبي|Asia/Dubai	a zone nobody knows is Abu Dhabi's
+parse	lat=1&lon=2	|Asia/Dubai	no city, no zone
 parse	city=%D8%A7%D9%84%D9%82%D8%A7%D9%87%D8%B1%D8%A9&tz=Africa%2FCairo	القاهرة|Africa/Cairo	another city
 # label: the city -> the small line under the clock
 label	دبي	بتوقيت دبي	as the screensaver's

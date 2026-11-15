@@ -10,11 +10,11 @@ import java.util.TimeZone;
  * ConfigProvider), like the prayer times beside them. No Android in here, so tests/clock_zone_test.py runs it.
  */
 final class ClockZone {
-    static final String DEFAULT = "Asia/Riyadh";
+    static final String DEFAULT = "Asia/Dubai";
 
     private ClockZone() { }
 
-    /** A zone id the platform knows; anything else (missing, misspelt) is Riyadh, as the page does. */
+    /** A zone id the platform knows; anything else (missing, misspelt) is Abu Dhabi's, as the page does. */
     static String valid(String id) {
         if (id == null) return DEFAULT;
         id = id.trim();

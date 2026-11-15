@@ -22,9 +22,9 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * «ترتيب المفضلة»: the favourites row as a list, arranged with the remote. OK on an app picks it up, ▲▼ move
- * it, OK drops it. «إزالة» beside each one, every other app below to add. No dialogs: the launcher is laid
- * out left to right, so rows are built right-aligned by hand. Opened from the long-press menu, from the
+ * «ترتيب المفضلة»: the favourites row as a list, arranged with the remote or by touch. OK (or a tap) on an app picks it
+ * up, ▲▼ move it (the keys, or the ▲ ▼ buttons on it), OK (or a tap on it) drops it. «إزالة» beside each one,
+ * every other app below to add. No dialogs: the launcher is laid out left to right, so rows are built right-aligned by hand. Opened from the long-press menu, from the
  * screensaver's settings, or `am start -n sa.urtv.home/.DockActivity`.
  */
 public class DockActivity extends Activity {
@@ -57,7 +57,7 @@ public class DockActivity extends Activity {
         frame.addView(col, new FrameLayout.LayoutParams(dp(600), -2, Gravity.CENTER_HORIZONTAL));
 
         col.addView(text("ترتيب المفضلة", 26, "Medium", TEXT), right(0));
-        col.addView(text("اختيار على تطبيق لتحريكه بالأسهم (أعلى/أسفل) ثم اختيار لتثبيته. من " + ar(Dock.MIN) + " إلى "
+        col.addView(text("اختيار (أو لمسة) على تطبيق، ثم ▲ ▼ لتحريكه، ثم اختيار عليه لتثبيته. من " + ar(Dock.MIN) + " إلى "
             + ar(Dock.MAX) + " تطبيقات.", 14, "Regular", DIM), right(dp(6)));
         count = text("", 13, "Medium", GOLD);
         col.addView(count, right(dp(24)));
@@ -143,8 +143,12 @@ public class DockActivity extends Activity {
         bg.setCornerRadius(dp(14));
         c.setBackground(bg);
 
-        final TextView arrows = text(lifted ? "▲▼" : "", 14, "Medium", INK);
-        c.addView(arrows, new LinearLayout.LayoutParams(-2, -2));
+        if (lifted) {   // ▲ ▼ are buttons too: a touch screen (a car's, no remote) moves the app by tapping them
+            c.addView(arrow("▲", -1), new LinearLayout.LayoutParams(dp(52), dp(44)));
+            LinearLayout.LayoutParams dn = new LinearLayout.LayoutParams(dp(52), dp(44));
+            dn.leftMargin = dp(8);
+            c.addView(arrow("▼", 1), dn);
+        }
         c.addView(new View(this), new LinearLayout.LayoutParams(0, 1, 1f));
         final TextView name = text(pkg == null ? badge : apps.get(pkg), 17, "Medium", TEXT);
         name.setSingleLine(true);
@@ -174,6 +178,20 @@ public class DockActivity extends Activity {
         paint.onFocusChange(c, false);
         c.setOnClickListener(click);
         return c;
+    }
+
+    /** a tappable ▲/▼ on the lifted card: not focusable, so the remote keeps its ▲▼ keys and OK; a tap moves the app one place */
+    private View arrow(String label, final int by) {
+        TextView a = text(label, 18, "Medium", GOLD);
+        a.setGravity(Gravity.CENTER);
+        a.setClickable(true);
+        a.setFocusable(false);
+        GradientDrawable bg = new GradientDrawable();
+        bg.setCornerRadius(dp(10));
+        bg.setColor(INK);
+        a.setBackground(bg);
+        a.setOnClickListener(v -> move(by));
+        return a;
     }
 
     private View pill(String label, View.OnClickListener click) {
@@ -213,6 +231,16 @@ public class DockActivity extends Activity {
         toast("أُضيف " + apps.get(pkg));
     }
 
+    /** the lifted app one place up (-1) or down (1), saved at once so a touch user who just leaves keeps the order */
+    private void move(int by) {
+        int to = moving + by;
+        if (moving < 0 || to < 0 || to >= row.size()) return;
+        Collections.swap(row, moving, to);
+        moving = to;
+        Dock.save(this, row);
+        render(moving);
+    }
+
     private void drop() {
         int at = moving;
         moving = -1;
@@ -226,15 +254,9 @@ public class DockActivity extends Activity {
         if (swallowUp == k && e.getAction() == KeyEvent.ACTION_UP) { swallowUp = -1; return true; }
         if (moving < 0) return super.dispatchKeyEvent(e);
         if (e.getAction() != KeyEvent.ACTION_DOWN) return true;   // while moving, every key is ours
-        if (k == KeyEvent.KEYCODE_DPAD_UP && moving > 0) {
-            Collections.swap(row, moving, moving - 1);
-            moving--;
-            render(moving);
-        } else if (k == KeyEvent.KEYCODE_DPAD_DOWN && moving < row.size() - 1) {
-            Collections.swap(row, moving, moving + 1);
-            moving++;
-            render(moving);
-        } else if (k == KeyEvent.KEYCODE_DPAD_CENTER || k == KeyEvent.KEYCODE_ENTER || k == KeyEvent.KEYCODE_BACK) {
+        if (k == KeyEvent.KEYCODE_DPAD_UP) move(-1);
+        else if (k == KeyEvent.KEYCODE_DPAD_DOWN) move(1);
+        else if (k == KeyEvent.KEYCODE_DPAD_CENTER || k == KeyEvent.KEYCODE_ENTER || k == KeyEvent.KEYCODE_BACK) {
             swallowUp = k;
             drop();
         }

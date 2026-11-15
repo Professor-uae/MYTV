@@ -235,6 +235,11 @@ check("java: no «OK» in an Arabic hint (use «اختيار»)", not okword, ok
 by_hand = [f"{f.name}: {m.group(0)}" for f, src in java.items() if f.name not in ("DigitsText.java",)
            for m in re.finditer(r"'[٠\u0660]'\s*\+|\+\s*'[٠\u0660]'|'[0-9]'\s*\+\s*\(?\w+\s*-\s*'٠'", src)]
 check("java: no digit conversion by hand outside DigitsText (Digits.of / DigitsText.convert)", not by_hand, by_hand)
+# «ترتيب المفضلة» on a touch screen (a car's, no remote): the lifted app's ▲ ▼ are buttons that move it, not a drawn label
+dock = (ROOT / "android/launcher/src/main/java/sa/urtv/home/DockActivity.java").read_text(encoding="utf-8")
+check("launcher DockActivity: ▲ ▼ on the lifted app are tappable and move it (move(-1) / move(1)), the keys use the same move()",
+      'arrow("▲", -1)' in dock and 'arrow("▼", 1)' in dock and "a.setOnClickListener(v -> move(by))" in dock
+      and "KEYCODE_DPAD_UP) move(-1)" in dock and "KEYCODE_DPAD_DOWN) move(1)" in dock)
 # the preview and the settings must open fresh: an open one comes back with the settings it opened with, or in front of
 # the one asked for (a TV test read the preview as the settings screen, and as the settings not working)
 starts = [f"{f.name}: {l.strip()}" for f in sorted((ROOT / "optimize").glob("*.sh"))

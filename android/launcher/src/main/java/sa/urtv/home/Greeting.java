@@ -145,7 +145,7 @@ final class Greeting {
     private static final class Config {
         boolean on = true;   // an older screensaver does not say: on, the default
         String city = "أبوظبي", lat = "24.4539", lon = "54.3773", tz = "Asia/Dubai";
-        boolean latin;
+        boolean latin = true;   // 123 until the screensaver says hindi
         String family = GreetingText.FAMILY_DEFAULT;   // the name the greetings end with (#family=)
 
         static Config of(ConfigSnapshot snap) {
@@ -164,7 +164,7 @@ final class Greeting {
                         case "lat": if (value.matches("-?\\d+(\\.\\d+)?")) s.lat = value; break;
                         case "lon": if (value.matches("-?\\d+(\\.\\d+)?")) s.lon = value; break;
                         case "tz": if (!value.trim().isEmpty()) s.tz = value.trim(); break;
-                        case "digits": s.latin = "latin".equals(value.toLowerCase(Locale.ROOT)); break;
+                        case "digits": s.latin = DigitsText.isLatin(value); break;
                         default: break;
                     }
                 }

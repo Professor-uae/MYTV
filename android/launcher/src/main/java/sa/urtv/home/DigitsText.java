@@ -2,7 +2,7 @@ package sa.urtv.home;
 
 /**
  * The one place that turns digits, with no Android in it (tests/DigitsTextRun.java runs it): the screensaver's «الأرقام» setting is
- * hindi (٠١٢٣, the default) or latin (0123), and every screen of this app follows it the way the page does. It converts both ways, so
+ * latin (0123, the default) or hindi (٠١٢٣), and every screen of this app follows it the way the page does. It converts both ways, so
  * a string built with either kind of digit comes out right: latin turns ٠-٩ into 0-9 (and «٫» into «.», «٪» into «%»), hindi the other way.
  */
 public final class DigitsText {
@@ -21,6 +21,6 @@ public final class DigitsText {
         return b.toString();
     }
 
-    /** the setting's value as the page reads it: «latin», anything else is hindi */
-    public static boolean isLatin(String setting) { return "latin".equalsIgnoreCase(setting); }
+    /** the setting's value as the page reads it: «hindi» is ١٢٣, anything else (latin, unset) is 123 */
+    public static boolean isLatin(String setting) { return !"hindi".equalsIgnoreCase(setting); }
 }

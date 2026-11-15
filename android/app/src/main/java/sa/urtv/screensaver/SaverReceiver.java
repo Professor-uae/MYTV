@@ -21,7 +21,7 @@ import java.util.Locale;
  *   am broadcast -n sa.urtv.screensaver/.SaverReceiver -a sa.urtv.screensaver.SET
  *       [--es city 'الرس'] [--es lat 25.86 --es lon 43.49 --es tz Asia/Kuwait]   (tz is needed for a place that is not in the list) [--es teams '136013:Al-Hilal,150643:Al-Zulfi']
  *       [--es panel prayers] [--es home_panel prayers,hourly,verse|none] [--es greeting on|off] [--es adhanbar on|off] [--es yearstrip on|off] [--es minrating 7] [--es genres Drama,Comedy] [--es langs English]
- *       [--es photos 30] [--es idle 10] [--es digits hindi|latin]
+ *       [--es photos 30] [--es idle 10] [--es digits latin|hindi]
  *       [--es cardstyle current|dark1|glass1|dark3|glass3] [--es national auto|off]
  *       [--es markets tasi,gold,btc] [--es mkstyle arrows|prices] [--es stocks 2222,1120,AAPL]
  *       [--es leagues 'Saudi-Arabian Pro League,NBA']
@@ -48,7 +48,7 @@ import java.util.Locale;
  * font = thmanyah|naskh; textsize = normal|large|xlarge (Prefs.FONTS, Prefs.TEXT_SIZES).
  * markets = up to four of Prefs.MARKETS at the top left, in order; mkstyle = arrows only (as always) or the price and the day's change.
  * stocks = the watchlist of the stocks card (panel stocks): up to Prefs.MAX_STOCKS Tadawul codes (4 digits) or US tickers.
- * digits = hindi (١٢٣, as always) or latin (123). photos = minutes between background photos (Prefs.PHOTO_MINUTES). idle = minutes before the TV starts the
+ * digits = latin (123, the default) or hindi (١٢٣). photos = minutes between background photos (Prefs.PHOTO_MINUTES). idle = minutes before the TV starts the
  * screensaver (Prefs.IDLE_MINUTES): this is the system's screen_off_timeout, which a receiver (it runs as this
  * app, not as the shell) may write only when the app holds WRITE_SETTINGS; otherwise it says so and
  * optimize/saver.sh sets it from the shell instead. Nothing changes unless the extra is given.

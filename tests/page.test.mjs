@@ -358,8 +358,8 @@ for (const [hash, want] of [['', 30], ['photos=5', 5], ['photos=60', 60], ['phot
   await ctx.close();
 }
 
-// ---- digits: #digits=latin shows 0-9 everywhere, anything else the Eastern ٠-٩ as before
-for (const [hash, latin] of [['', false], ['digits=hindi', false], ['digits=latin', true], ['digits=bogus', false]]) {
+// ---- digits: #digits=hindi shows the Eastern ٠-٩ everywhere, anything else (none too) 0-9
+for (const [hash, latin] of [['', true], ['digits=hindi', false], ['digits=latin', true], ['digits=bogus', true]]) {
   const { p, ctx, errors } = await open('tv.html', 'teams=136013&panel=prayers&' + hash);
   const r = await p.evaluate(() => {
     MATCHES['136013'] = {idEvent:'x1', strHomeTeam:'Al-Hilal', strAwayTeam:'Al-Nassr', strTimestamp:new Date(Date.now() + 3 * 86400000 + 36e5).toISOString(), strStatus:'NS'};

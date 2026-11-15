@@ -336,7 +336,7 @@ optimize/saver.sh idle <1, 2, 5, 10, 15 or 30>   # ONLY if I asked when the scre
 optimize/saver.sh cardstyle <current, dark1, glass1, dark3 or glass3>   # ONLY if I asked for another look for the card beside the clock (default current: leave it)
 optimize/saver.sh national <auto or off>          # ONLY if I asked to turn off the green look on National Day and Founding Day (default auto: leave it)
 optimize/saver.sh prayeradj <fajr +2 maghrib -1 …, then on>   # ONLY if I said my mosque's adhan is minutes early or late (default off: leave it); off goes back to the calculated times
-optimize/saver.sh digits <hindi or latin>        # ONLY if I asked for 123 instead of ١٢٣ (default hindi: leave it)
+optimize/saver.sh digits <latin or hindi>        # ONLY if I asked for ١٢٣ instead of 123 (default latin: leave it)
 optimize/saver.sh markets <up to 4 of tasi, aramco, spx, btc, gold, silver, xrp, comma-separated>   # ONLY if I asked for other markets at the top left (default tasi,spx,btc: leave it)
 optimize/saver.sh mkstyle <arrows or prices>      # ONLY if I asked to see the prices, not just arrows (default arrows: leave it)
 optimize/saver.sh stocks <Tadawul codes and US tickers, e.g. 2222 1120 AAPL>   # ONLY with card stocks: my watchlist, up to 8 (default 2222 1120 7010 2010: leave it)

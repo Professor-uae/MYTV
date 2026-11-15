@@ -28,6 +28,15 @@ for act in ["MainActivity", "TasksActivity", "DockActivity", "tilawah/MainActivi
 check("settings: every number and label goes through conv() and the setting is read at each render",
       "latinDigits = DigitsText.isLatin(prefs.digits());" in (APP / "SettingsActivity.java").read_text(encoding="utf-8")
       and "DigitsText.convert(s, latinDigits)" in (APP / "SettingsActivity.java").read_text(encoding="utf-8"))
+# 123 («عربية») is the default everywhere, as the page's: the setting, both helpers, the launcher's snapshot, greeting and kept state
+prefs = (APP / "Prefs.java").read_text(encoding="utf-8")
+check("default digits: the screensaver's setting is latin until the user picks", 'sp.getString("digits", "latin")' in prefs
+      and 'DIGITS = {{"latin", "عربية 123"}' in prefs)
+check("default digits: isLatin reads anything but hindi as 123 (both copies)", all('!"hindi".equalsIgnoreCase(setting)' in s for s in (a, b)))
+check("default digits: the launcher's snapshot, greeting and kept state start at 123",
+      'fragment == null || !(fragment.contains("&digits=hindi")' in (HOME / "ConfigSnapshot.java").read_text(encoding="utf-8")
+      and "boolean latin = true;" in (HOME / "Greeting.java").read_text(encoding="utf-8")
+      and 'sp.getBoolean("latin", true)' in (HOME / "Digits.java").read_text(encoding="utf-8"))
 
 if not shutil.which("javac"):
     print("SKIP digits text: no javac here")

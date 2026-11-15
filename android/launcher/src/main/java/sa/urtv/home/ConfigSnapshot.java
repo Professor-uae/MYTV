@@ -43,5 +43,6 @@ final class ConfigSnapshot {
     /** {city, zone id}; null when the screensaver gave nothing: the TV's own zone then */
     String[] cityZone() { return fragment == null ? null : ClockZone.parse(fragment); }
 
-    boolean latin() { return fragment != null && (fragment.contains("&digits=latin") || fragment.startsWith("digits=latin")); }
+    /** 123 unless the screensaver says hindi (١٢٣), as the page reads #digits= */
+    boolean latin() { return fragment == null || !(fragment.contains("&digits=hindi") || fragment.startsWith("digits=hindi")); }
 }

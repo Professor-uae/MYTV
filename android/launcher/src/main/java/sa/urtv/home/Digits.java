@@ -19,7 +19,7 @@ public final class Digits {
     /** a screen's start: the last known setting at once, then what the screensaver says now */
     public static void init(Context c) {
         SharedPreferences sp = c.getApplicationContext().getSharedPreferences(PREFS, Context.MODE_PRIVATE);
-        latin = sp.getBoolean("latin", false);
+        latin = sp.getBoolean("latin", true);   // 123 until the screensaver says hindi
         remember(c, ConfigSnapshot.read(c));
     }
 

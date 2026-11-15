@@ -70,8 +70,8 @@ final class Prefs {
     // minutes between background photos (sent to the page as #photos=; 30 is what it always did)
     static final String[] PHOTO_MINUTES = {"5", "10", "15", "30", "60"};
 
-    // digits on the screen (sent to the page as #digits=; hindi is what it always showed)
-    static final String[][] DIGITS = {{"hindi", "هندية ١٢٣"}, {"latin", "عربية 123"}};
+    // digits on the screen (sent to the page as #digits=): latin («عربية 123») until the user picks hindi («هندية ١٢٣»)
+    static final String[][] DIGITS = {{"latin", "عربية 123"}, {"hindi", "هندية ١٢٣"}};
 
     // the national days (sent to the page as #national=; auto shows them on their days, off never)
     static final String[][] NATIONAL = {{"auto", "تلقائي"}, {"off", "إيقاف"}};
@@ -258,7 +258,7 @@ final class Prefs {
     String minRating() { return sp.getString("minRating", "7"); }
     void setMinRating(String v) { sp.edit().putString("minRating", v).apply(); }
 
-    String digits() { return sp.getString("digits", "hindi"); }
+    String digits() { return sp.getString("digits", "latin"); }
     void setDigits(String v) { sp.edit().putString("digits", v).apply(); }
 
     static String digitsLabel(String v) {

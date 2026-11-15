@@ -251,6 +251,8 @@ check("screensaver preview: a tap closes it, as a key does",
       "dispatchTouchEvent" in (ROOT / "android/app/src/main/java/sa/urtv/screensaver/MainActivity.java").read_text(encoding="utf-8"))
 check("settings: a prayer's minutes change by a tap (left half +, right half −), a long press zeroes them",
       "PrayerAdj.step(a[k], tapAt[0] < 0.5f ? 1 : -1)" in (ROOT / "android/app/src/main/java/sa/urtv/screensaver/SettingsActivity.java").read_text(encoding="utf-8"))
+check("home: a swipe on «يُتلى الآن» is ◀ ▶ (previous/next surah) for a touch screen",
+      "nowCard.setOnTouchListener" in (ROOT / "android/launcher/src/main/java/sa/urtv/home/MainActivity.java").read_text(encoding="utf-8"))
 # the preview and the settings must open fresh: an open one comes back with the settings it opened with, or in front of
 # the one asked for (a TV test read the preview as the settings screen, and as the settings not working)
 starts = [f"{f.name}: {l.strip()}" for f in sorted((ROOT / "optimize").glob("*.sh"))

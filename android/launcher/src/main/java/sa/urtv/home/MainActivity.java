@@ -448,6 +448,20 @@ public class MainActivity extends Activity {
         nowCard.setVisibility(View.GONE);
         nowCard.setOnClickListener(v -> NowPlaying.toggle(this));   // OK: pause or play
         nowCard.setOnLongClickListener(v -> { startActivity(NowPlaying.player(this)); return true; });   // a long OK: the player
+        // a touch screen (a car's, no remote) has no ◀ ▶: a swipe on the card does what they do — leftwards the previous
+        // surah, rightwards the next (as the keys); a tap still pauses or plays, a long press opens the player
+        final float[] downX = {0f};
+        nowCard.setOnTouchListener((v, ev) -> {
+            if (ev.getActionMasked() == android.view.MotionEvent.ACTION_DOWN) downX[0] = ev.getX();
+            if (ev.getActionMasked() != android.view.MotionEvent.ACTION_UP) return false;
+            float dx = ev.getX() - downX[0];
+            NowPlaying.State st = NowPlaying.read(this);
+            if (Math.abs(dx) < dp(48) || !st.show || st.radio) return false;
+            v.cancelLongPress();
+            v.setPressed(false);
+            if (dx < 0) NowPlaying.prev(this); else NowPlaying.next(this);
+            return true;   // a swipe, not a tap: no pause
+        });
         nowCard.setOnFocusChangeListener((v, has) -> {
             if (has) { lastFocusedId = v.getId(); scroll.smoothScrollTo(0, 0); fadeGlow(1f); }
         });

@@ -99,7 +99,10 @@ public class MainActivity extends Activity {
                 startActivity(new Intent(this, AdhanActivity.class));
             } else if (row.kind == KIND_EXACT) {
                 openExactAlarmSettings();
-            }   // «صوت الأذان» is set with left/right (changeVolume); OK on it does nothing
+            } else if (row.kind == KIND_VOLUME) {
+                // the remote sets it with left/right; a touch screen has only the tap: one step louder, after 100 back to 10
+                changeVolume(prefs.adhanVolume() >= 100 ? 10 - prefs.adhanVolume() : 10);
+            }
         });
 
         tabs = findViewById(R.id.tabs);

@@ -9,6 +9,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.SystemClock;
 import android.view.KeyEvent;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
@@ -20,7 +21,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 import sa.urtv.home.R;
 
-/** Now playing. The whole screen is the control surface: OK, arrows, down for the sleep timer. */
+/** Now playing. With the remote the whole screen is the control surface: OK, arrows, down for the sleep timer.
+ *  On a touch screen (a car's, no remote) the same by hand: ⏮ ⏯ ⏭ are tapped, the bar is tapped or dragged to seek,
+ *  and «مؤقت النوم» under them opens the sleep timer. None of them takes the focus, so the remote keys stay as they were. */
 public class PlayerActivity extends Activity {
 
     private final Handler handler = new Handler(Looper.getMainLooper());
@@ -30,6 +33,7 @@ public class PlayerActivity extends Activity {
     private ProgressBar progress;
     private ImageView play;
     private long openedAt;
+    private boolean dragging;   // a finger on the bar: render() leaves it alone until it lifts
 
     private final Runnable refresh = new Runnable() {
         @Override public void run() {
@@ -68,6 +72,39 @@ public class PlayerActivity extends Activity {
         Ui.text(dur, "Thmanyah-Regular.otf", 14, R.color.dim);
         Ui.text(sleepInfo, "Thmanyah-Medium.otf", 14, R.color.gold);
         Ui.text(hint, "Thmanyah-Regular.otf", 14, R.color.dim);
+
+        play.setOnClickListener(v -> MusicService.toggle(this));
+        prev.setOnClickListener(v -> { if (!adhanPlaying()) MusicService.prevAction(this); });
+        next.setOnClickListener(v -> { if (!adhanPlaying()) MusicService.nextAction(this); });
+        sleepInfo.setOnClickListener(v -> showSleep());
+        progressBlock.setOnTouchListener((v, e) -> seekTouch(e));
+    }
+
+    /** The bar under a finger: it follows the drag, and the surah jumps there when the finger lifts (one seek, not dozens). */
+    private boolean seekTouch(MotionEvent e) {
+        int duration = MusicService.currentDuration();
+        if (duration <= 0 || adhanPlaying() || MusicService.currentSource() == Prefs.SOURCE_RADIO) return false;
+        float frac = (e.getX() - progress.getLeft()) / Math.max(1f, progress.getWidth());
+        if (progress.getLayoutDirection() == View.LAYOUT_DIRECTION_RTL) frac = 1f - frac;   // the bar fills from the right
+        frac = Math.max(0f, Math.min(1f, frac));
+        int target = Math.round(frac * duration);
+        switch (e.getActionMasked()) {
+            case MotionEvent.ACTION_DOWN:
+            case MotionEvent.ACTION_MOVE:
+                dragging = true;
+                progress.setProgress(Math.round(frac * 1000));
+                pos.setText(Ui.time(target));
+                return true;
+            case MotionEvent.ACTION_UP:
+                dragging = false;
+                MusicService.seekBy(this, target - MusicService.currentPosition());
+                return true;
+            case MotionEvent.ACTION_CANCEL:
+                dragging = false;
+                return true;
+            default:
+                return true;
+        }
     }
 
     @Override protected void onResume() {
@@ -118,9 +155,9 @@ public class PlayerActivity extends Activity {
 
             int duration = MusicService.currentDuration();
             int position = MusicService.currentPosition();
-            pos.setText(Ui.time(position));
             dur.setText(duration > 0 ? Ui.time(duration) : "--:--");
-            progress.setProgress(duration > 0 ? (int) Math.min(1000L, 1000L * position / duration) : 0);
+            if (!dragging) pos.setText(Ui.time(position));
+            if (!dragging) progress.setProgress(duration > 0 ? (int) Math.min(1000L, 1000L * position / duration) : 0);
         }
 
         String error = MusicService.currentError();
@@ -131,10 +168,10 @@ public class PlayerActivity extends Activity {
         long left = MusicService.sleepAt() - System.currentTimeMillis();
         if (left > 0) {
             sleepInfo.setText(getString(R.string.sleep_left, Ui.arabic((int) Math.ceil(left / 60000.0))));
-            sleepInfo.setVisibility(View.VISIBLE);
         } else {
-            sleepInfo.setVisibility(View.GONE);
+            sleepInfo.setText(R.string.sleep_timer);   // always there: a touch screen has no «down» to open it
         }
+        sleepInfo.setVisibility(View.VISIBLE);
     }
 
     @Override public boolean onKeyDown(int keyCode, KeyEvent event) {

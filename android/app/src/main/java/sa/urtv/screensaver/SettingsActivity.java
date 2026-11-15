@@ -1177,13 +1177,27 @@ public class SettingsActivity extends Activity {
 
     /**
      * One prayer of «تعديل وقت الصلاة»: «الفجر +٢ د». Left adds a minute and right takes one off (the reading direction of an Arabic
-     * screen runs leftwards), from −20 to +20; OK puts it back to zero. The text changes where it is, so the focus and the scroll stay.
+     * screen runs leftwards), from −20 to +20; OK puts it back to zero. On a touch screen (a car's, no remote) a tap on the card's left
+     * half adds and on its right half takes off, and a long press puts it back to zero. The text changes where it is, so the focus and the scroll stay.
      */
     private void adjRow(final int k) {
-        final View card = row(PrayerAdj.label(k, prefs.prayerAdj()[k]), "يسار + · يمين − · موافق للتصفير", R.drawable.ic_eye, null);
+        final View card = row(PrayerAdj.label(k, prefs.prayerAdj()[k]), "يسار + · يمين − · موافق أو ضغطة طويلة للتصفير", R.drawable.ic_eye, null);
         final TextView name = (TextView) ((LinearLayout) ((LinearLayout) card).getChildAt(1)).getChildAt(0);
         final Runnable show = new Runnable() { public void run() { name.setText(conv(PrayerAdj.label(k, prefs.prayerAdj()[k]))); } };
-        card.setOnClickListener(v -> { int[] a = prefs.prayerAdj(); a[k] = 0; prefs.setPrayerAdj(a); show.run(); });
+        final float[] tapAt = {-1f};   // where the last finger lifted, 0 (left edge) to 1; -1 = the click came from OK
+        card.setOnTouchListener((v, ev) -> {
+            if (ev.getActionMasked() == android.view.MotionEvent.ACTION_UP   // a short tap only: a long press resets, and OK after it must too
+                    && ev.getEventTime() - ev.getDownTime() < android.view.ViewConfiguration.getLongPressTimeout()) tapAt[0] = ev.getX() / Math.max(1, v.getWidth());
+            return false;
+        });
+        card.setOnClickListener(v -> {
+            int[] a = prefs.prayerAdj();
+            a[k] = tapAt[0] < 0 ? 0 : PrayerAdj.step(a[k], tapAt[0] < 0.5f ? 1 : -1);   // a tap: left half +, right half −
+            tapAt[0] = -1f;
+            prefs.setPrayerAdj(a);
+            show.run();
+        });
+        card.setOnLongClickListener(v -> { tapAt[0] = -1f; int[] a = prefs.prayerAdj(); a[k] = 0; prefs.setPrayerAdj(a); show.run(); return true; });
         card.setOnKeyListener((v, code, ev) -> {
             int d = code == android.view.KeyEvent.KEYCODE_DPAD_LEFT ? 1 : code == android.view.KeyEvent.KEYCODE_DPAD_RIGHT ? -1 : 0;
             if (d == 0) return false;

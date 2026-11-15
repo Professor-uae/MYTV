@@ -240,6 +240,17 @@ dock = (ROOT / "android/launcher/src/main/java/sa/urtv/home/DockActivity.java").
 check("launcher DockActivity: ▲ ▼ on the lifted app are tappable and move it (move(-1) / move(1)), the keys use the same move()",
       'arrow("▲", -1)' in dock and 'arrow("▼", 1)' in dock and "a.setOnClickListener(v -> move(by))" in dock
       and "KEYCODE_DPAD_UP) move(-1)" in dock and "KEYCODE_DPAD_DOWN) move(1)" in dock)
+# a touch screen (a car's, no remote) must reach what the remote reaches: the player, the adhan volume, the preview, the prayer minutes
+TIL = ROOT / "android/launcher/src/main/java/sa/urtv/home/tilawah"
+player = (TIL / "PlayerActivity.java").read_text(encoding="utf-8")
+check("player: ⏮ ⏯ ⏭ and «مؤقت النوم» are tapped, the bar is dragged to seek",
+      all(x in player for x in ("play.setOnClickListener", "prev.setOnClickListener", "next.setOnClickListener",
+                                "sleepInfo.setOnClickListener(v -> showSleep())", "progressBlock.setOnTouchListener")))
+check("tilawah: a tap on «صوت الأذان» changes it (the remote has left/right)", "row.kind == KIND_VOLUME" in (TIL / "MainActivity.java").read_text(encoding="utf-8"))
+check("screensaver preview: a tap closes it, as a key does",
+      "dispatchTouchEvent" in (ROOT / "android/app/src/main/java/sa/urtv/screensaver/MainActivity.java").read_text(encoding="utf-8"))
+check("settings: a prayer's minutes change by a tap (left half +, right half −), a long press zeroes them",
+      "PrayerAdj.step(a[k], tapAt[0] < 0.5f ? 1 : -1)" in (ROOT / "android/app/src/main/java/sa/urtv/screensaver/SettingsActivity.java").read_text(encoding="utf-8"))
 # the preview and the settings must open fresh: an open one comes back with the settings it opened with, or in front of
 # the one asked for (a TV test read the preview as the settings screen, and as the settings not working)
 starts = [f"{f.name}: {l.strip()}" for f in sorted((ROOT / "optimize").glob("*.sh"))

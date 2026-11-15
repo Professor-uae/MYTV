@@ -3,11 +3,12 @@ package sa.urtv.screensaver;
 import android.app.Activity;
 import android.os.Bundle;
 import android.view.KeyEvent;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.webkit.WebView;
 
-/** Full-screen preview of the screensaver; any remote key closes it. */
+/** Full-screen preview of the screensaver; any remote key or a tap on a touch screen closes it. */
 public class MainActivity extends Activity {
     private WebView web;
 
@@ -25,6 +26,13 @@ public class MainActivity extends Activity {
     @Override
     public boolean dispatchKeyEvent(KeyEvent e) {
         if (e.getAction() == KeyEvent.ACTION_UP) finish();
+        return true;
+    }
+
+    /** a touch screen (a car's, no remote) has no key to press: a tap closes the preview, as a key does */
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent e) {
+        if (e.getActionMasked() == MotionEvent.ACTION_UP) finish();
         return true;
     }
 

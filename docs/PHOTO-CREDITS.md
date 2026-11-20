@@ -8,24 +8,28 @@ Five of the hosted photos below, copied into `assets/backgrounds/`:
 `9hWJs7iblh8.jpg` `XDtzu1D2P8c.jpg` `t3dlLOhdEzs.jpg` `LAj90eAXOZA.jpg` `f5ZB0LHwi0s.jpg` 
 
 Abu Dhabi's, in `assets/backgrounds-uae/` (the home screen's bundled photos while the city is not in Saudi Arabia; Abu Dhabi is the
-default), from [Unsplash](https://unsplash.com) under the [Unsplash License](https://unsplash.com/license), 1920×1080:
+default), from [Unsplash](https://unsplash.com) under the [Unsplash License](https://unsplash.com/license), 1920×1080 (on a 1920×720
+screen they show pixel for pixel, the middle band). The first eight are cut from the owner's full-size downloads:
 
 | File | Subject | Photographer | Source |
 |---|---|---|---|
-| `assets/backgrounds-uae/abudhabi-01.jpg` | Sheikh Zayed Grand Mosque at dusk | David Rodrigo | [unsplash](https://images.unsplash.com/photo-1512632578888-169bbbc64f33) |
-| `assets/backgrounds-uae/abudhabi-02.jpg` | Corniche skyline | Karthik B K | [unsplash](https://images.unsplash.com/photo-1668060742975-9a462159b0bd) |
-| `assets/backgrounds-uae/abudhabi-03.jpg` | Corniche park and towers | Jean Carlo Emer | [unsplash](https://images.unsplash.com/photo-1762687508992-effc04be64b8) |
-| `assets/backgrounds-uae/abudhabi-04.jpg` | skyline from the beach | Nick Fewings | [unsplash](https://images.unsplash.com/photo-1603565095944-2a6f33bb517c) |
-| `assets/backgrounds-uae/abudhabi-05.jpg` | Etihad Towers and Emirates Palace | Imtiyaz Ali | [unsplash](https://images.unsplash.com/photo-1613835579153-9bfe32e50da6) |
-| `assets/backgrounds-uae/abudhabi-06.jpg` | skyline at night | Kevin JD | [unsplash](https://images.unsplash.com/photo-1624317937315-0ced8736c9e9) |
-| `assets/backgrounds-uae/abudhabi-07.jpg` | Marina Mall and the Corniche from above | Po-Hsuan Huang | [unsplash](https://images.unsplash.com/photo-1758952327505-d3917528173a) |
-| `assets/backgrounds-uae/abudhabi-08.jpg` | skyline at night over the water | Leon Macapagal | [unsplash](https://images.unsplash.com/photo-1661630802951-9bf877543041) |
-| `assets/backgrounds-uae/abudhabi-09.jpg` | Louvre Abu Dhabi | Nazar Skalatsky | [unsplash](https://images.unsplash.com/photo-1587421890935-5fb13a3beccc) |
-| `assets/backgrounds-uae/abudhabi-10.jpg` | Al Reem Island and mangroves | janith devinda | [unsplash](https://images.unsplash.com/photo-1670166151106-6b44797e4c4f) |
-| `assets/backgrounds-uae/abudhabi-11.jpg` | Louvre Abu Dhabi | Yan Ma | [unsplash](https://images.unsplash.com/photo-1672324016837-4b803c38fc95) |
-| `assets/backgrounds-uae/abudhabi-12.jpg` | Sheikh Zayed Grand Mosque domes | Dovlet Hojayev | [unsplash](https://images.unsplash.com/photo-1592678725254-37e8a2653e6b) |
-| `assets/backgrounds-uae/abudhabi-13.jpg` | Sheikh Zayed Grand Mosque courtyard | Nick Fewings | [unsplash](https://images.unsplash.com/photo-1590075865003-e48277faa558) |
-| `assets/backgrounds-uae/abudhabi-14.jpg` | Etihad Towers at sunset | Saeed Alsoomehi | [unsplash](https://images.unsplash.com/photo-1734009775179-07f428483783) |
+| `assets/backgrounds-uae/abudhabi-01.jpg` | Sheikh Zayed Grand Mosque, the courtyard | Alessa Ciraulo | [unsplash](https://unsplash.com/photos/r-cy77rA0J0) |
+| `assets/backgrounds-uae/abudhabi-02.jpg` | Sheikh Zayed Grand Mosque at golden hour | Daniel Olah | [unsplash](https://unsplash.com/photos/2lMK4dgqwFM) |
+| `assets/backgrounds-uae/abudhabi-03.jpg` | Sheikh Zayed Grand Mosque at dusk | David Rodrigo | [unsplash](https://unsplash.com/photos/kZ1zThg6G40) |
+| `assets/backgrounds-uae/abudhabi-04.jpg` | sunset over the city and the creek | Gamze Teoman | [unsplash](https://unsplash.com/photos/4Udz10pJYLQ) |
+| `assets/backgrounds-uae/abudhabi-05.jpg` | Etihad Towers and Emirates Palace | Imtiyaz Ali | [unsplash](https://unsplash.com/photos/tohb5lsxAB8) |
+| `assets/backgrounds-uae/abudhabi-06.jpg` | Corniche skyline | Karthik B K | [unsplash](https://unsplash.com/photos/J1dkREbfefU) |
+| `assets/backgrounds-uae/abudhabi-07.jpg` | skyline at night | Kevin JD | [unsplash](https://unsplash.com/photos/S5SQzWdUhoE) |
+| `assets/backgrounds-uae/abudhabi-08.jpg` | Etihad Towers at sunset | Saeed Alsoomehi | [unsplash](https://unsplash.com/photos/ytrAZCINPM4) |
+| `assets/backgrounds-uae/abudhabi-09.jpg` | Corniche park and towers | Jean Carlo Emer | [unsplash](https://images.unsplash.com/photo-1762687508992-effc04be64b8) |
+| `assets/backgrounds-uae/abudhabi-10.jpg` | skyline from the beach | Nick Fewings | [unsplash](https://images.unsplash.com/photo-1603565095944-2a6f33bb517c) |
+| `assets/backgrounds-uae/abudhabi-11.jpg` | Marina Mall and the Corniche from above | Po-Hsuan Huang | [unsplash](https://images.unsplash.com/photo-1758952327505-d3917528173a) |
+| `assets/backgrounds-uae/abudhabi-12.jpg` | skyline at night over the water | Leon Macapagal | [unsplash](https://images.unsplash.com/photo-1661630802951-9bf877543041) |
+| `assets/backgrounds-uae/abudhabi-13.jpg` | Louvre Abu Dhabi | Nazar Skalatsky | [unsplash](https://images.unsplash.com/photo-1587421890935-5fb13a3beccc) |
+| `assets/backgrounds-uae/abudhabi-14.jpg` | Al Reem Island and mangroves | janith devinda | [unsplash](https://images.unsplash.com/photo-1670166151106-6b44797e4c4f) |
+| `assets/backgrounds-uae/abudhabi-15.jpg` | Louvre Abu Dhabi | Yan Ma | [unsplash](https://images.unsplash.com/photo-1672324016837-4b803c38fc95) |
+| `assets/backgrounds-uae/abudhabi-16.jpg` | Sheikh Zayed Grand Mosque domes | Dovlet Hojayev | [unsplash](https://images.unsplash.com/photo-1592678725254-37e8a2653e6b) |
+| `assets/backgrounds-uae/abudhabi-17.jpg` | Sheikh Zayed Grand Mosque courtyard | Nick Fewings | [unsplash](https://images.unsplash.com/photo-1590075865003-e48277faa558) |
 
 ## Hosted set (`photos/`)
 

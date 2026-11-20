@@ -102,7 +102,9 @@ public class MainActivity extends Activity {
     private View glow;
     private ImageView wallBack, wallFront;
     private View gridShade;
-    private String[] wallpapers = new String[0];
+    private String[] wallpapers = new String[0];      // bundled: Saudi Arabia's (assets/backgrounds)
+    private String[] wallpapersUae = new String[0];   // bundled: Abu Dhabi's (assets/backgrounds-uae), the default city's
+    private boolean uae = true;   // the city is not Saudi: Abu Dhabi's photos (bundled and hosted) instead of Saudi Arabia's
     private int wallIndex = -1;
     private long wallChangedAt;
     private final Handler handler = new Handler(Looper.getMainLooper());
@@ -267,6 +269,7 @@ public class MainActivity extends Activity {
         root.addView(gridShade, new FrameLayout.LayoutParams(-1, -1));
         try {
             wallpapers = getAssets().list("wallpapers");
+            wallpapersUae = getAssets().list("wallpapers-uae");
         } catch (java.io.IOException ignored) { }
 
         glow = new View(this);
@@ -1057,7 +1060,7 @@ public class MainActivity extends Activity {
 
     /** This 4-day period's 5 hosted photos: the same Park-Miller draw as photoSet() in the screensaver page. */
     private String[] remotePhotos() {
-        String s = prefs().getString("photoIndex", "");
+        String s = prefs().getString(uae ? "photoIndexUae" : "photoIndex", "");
         if (s.isEmpty()) return new String[0];
         String[] all = s.split(",");
         java.util.Calendar c = java.util.Calendar.getInstance(java.util.TimeZone.getTimeZone(ClockZone.DEFAULT));
@@ -1098,13 +1101,14 @@ public class MainActivity extends Activity {
         if (failedRecently("index.json")) return;
         try {
             org.json.JSONArray a = new org.json.JSONArray(new String(download(PHOTO_BASE + "index.json"), "UTF-8"));
-            List<String> names = new ArrayList<>();
+            List<String> names = new ArrayList<>(), uaeNames = new ArrayList<>();   // "r":"uae" marks the UAE's photos, the rest are Saudi Arabia's
             for (int i = 0; i < a.length(); i++) {
                 String f = a.getJSONObject(i).optString("f");
-                if (f.matches("[A-Za-z0-9_-]+\\.jpg")) names.add(f);
+                if (f.matches("[A-Za-z0-9_-]+\\.jpg")) ("uae".equals(a.getJSONObject(i).optString("r")) ? uaeNames : names).add(f);
             }
             if (!names.isEmpty()) prefs().edit()
                     .putString("photoIndex", android.text.TextUtils.join(",", names))
+                    .putString("photoIndexUae", android.text.TextUtils.join(",", uaeNames))
                     .putLong("photoIndexAt", System.currentTimeMillis()).apply();
         } catch (Exception ignored) {
             photoFailed.put("index.json", System.currentTimeMillis());
@@ -1170,20 +1174,24 @@ public class MainActivity extends Activity {
     /** Decode the next photo off the main thread, then crossfade it in over the current one. */
     private void nextWallpaper() {
         handler.removeCallbacks(rotateWallpaper);
-        if (wallpapers.length == 0) return;
+        String[] zone = ConfigSnapshot.read(this).cityZone();   // Abu Dhabi (the default) and any city not in Saudi Arabia: Abu Dhabi's photos
+        uae = zone == null || !"Asia/Riyadh".equals(zone[1]);
+        final String[] ours = uae && wallpapersUae.length > 0 ? wallpapersUae : wallpapers;
+        final String ourDir = ours == wallpapersUae ? "wallpapers-uae/" : "wallpapers/";
+        if (ours.length == 0) return;
         final Object[] own = ownInfo();
         final int ownCount = (Integer) own[0];
         final boolean only = ownCount > 0 && "only".equals(own[1]);
         prefs().edit().putLong("ownRev", (Long) own[2]).apply();
         final String[] remote = only ? new String[0] : remotePhotos();
-        final int base = only ? 0 : wallpapers.length + remote.length;   // ours come first, then the owner's
+        final int base = only ? 0 : ours.length + remote.length;   // ours come first, then the owner's
         final int total = only ? ownCount : base + ownCount;
         if (wallIndex < 0) wallIndex = prefs().getInt("wallpaper", -1);
         wallIndex = (wallIndex + 1) % total;
         prefs().edit().putInt("wallpaper", wallIndex).apply();
         wallChangedAt = SystemClock.elapsedRealtime();
         final int idx = wallIndex;
-        final String fallback = "wallpapers/" + wallpapers[idx % wallpapers.length];
+        final String fallback = ourDir + ours[idx % ours.length];
         new Thread(() -> {
             if (!only) {   // no network while only the owner's photos show
                 refreshPhotoIndex();
@@ -1195,8 +1203,8 @@ public class MainActivity extends Activity {
                 try {
                     bm = decode(() -> getContentResolver().openInputStream(photo));
                 } catch (java.io.IOException | RuntimeException ignored) { }
-            } else if (idx >= wallpapers.length) {
-                java.io.File f = new java.io.File(getFilesDir(), "photos/" + remote[idx - wallpapers.length]);
+            } else if (idx >= ours.length) {
+                java.io.File f = new java.io.File(getFilesDir(), "photos/" + remote[idx - ours.length]);
                 try {
                     if (!f.isFile() && failedRecently(f.getName())) throw new java.io.IOException("failed lately");   // the bundled one meanwhile
                     if (!f.isFile()) {

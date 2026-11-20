@@ -35,7 +35,7 @@ android {
         }
     }
 
-    // wallpapers are the screensaver's Saudi photos, copied in at build time
+    // wallpapers are the screensaver's photos, copied in at build time: Saudi Arabia's (wallpapers/) and Abu Dhabi's (wallpapers-uae/)
     sourceSets {
         main { assets.srcDirs += ["$buildDir/generated/wallpapers", "$buildDir/generated/web"] }
     }
@@ -49,8 +49,9 @@ android {
 }
 
 def copyWallpapers = tasks.register('copyWallpapers', Copy) {
-    from('../../assets/backgrounds') { include '*.jpg' }
-    into "$buildDir/generated/wallpapers/wallpapers"
+    from('../../assets/backgrounds') { include '*.jpg'; into 'wallpapers' }
+    from('../../assets/backgrounds-uae') { include '*.jpg'; into 'wallpapers-uae' }
+    into "$buildDir/generated/wallpapers"
 }
 preBuild.dependsOn copyWallpapers
 

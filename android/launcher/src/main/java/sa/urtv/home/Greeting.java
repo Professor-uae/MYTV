@@ -20,8 +20,8 @@ import java.util.Locale;
 import sa.urtv.home.tilawah.DayParts;
 
 /**
- * The greeting above the home screen's clock («صباح الخير» from Fajr to Dhuhr, «طاب يومكم» to Asr, «مساء الخير» to Isha,
- * «تصبح على خير» after) and under it the weather of the screensaver's city and the next sunrise or sunset.
+ * The greeting above the home screen's clock («صباح الخير الله يحفظ» from Fajr to Dhuhr, «مساء الخير الله يحفظ» from Dhuhr until
+ * the next Fajr, by the city's time; GreetingText) and under it the weather of the screensaver's city and the next sunrise or sunset.
  *
  * Settings come from the screensaver's ConfigProvider (city, digits and «التحية والطقس»). The weather is asked of
  * Open-Meteo at most once every 30 minutes (the current temperature and weather code, and the air's dust as the screensaver's page asks it: two requests), and only while the greeting is on; the last answer is kept, so a TV that
@@ -47,13 +47,13 @@ final class Greeting {
     void update(int hour, ConfigSnapshot snap) {
         Config s = Config.of(snap);
         if (!s.on) {
-            greeting.setText(hour < 4 ? "تصبحون على خير " + s.family : hour < 12 ? "صباح الخير " + s.family : "مساء الخير " + s.family);
+            greeting.setText(GreetingText.byHour(hour, s.family));
             weather.setVisibility(android.view.View.GONE);
             return;
         }
         DayParts d = null;
         try { d = DayParts.now(context, snap.fragment); } catch (RuntimeException ignored) { }
-        greeting.setText(d == null ? (hour < 4 ? "تصبحون على خير " + s.family : hour < 12 ? "صباح الخير " + s.family : "مساء الخير " + s.family)
+        greeting.setText(d == null ? GreetingText.byHour(hour, s.family)
                 : GreetingText.greeting(GreetingText.part(System.currentTimeMillis(), d.fajr, d.dhuhr, d.asr, d.isha), s.family));
 
         SharedPreferences sp = prefs();

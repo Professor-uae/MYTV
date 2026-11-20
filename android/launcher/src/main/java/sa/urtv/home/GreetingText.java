@@ -18,17 +18,19 @@ final class GreetingText {
         return NIGHT;
     }
 
-    static final String FAMILY_DEFAULT = "عائلة الحضرمي";
+    /** the words the greeting ends with until the owner writes their own («اسم العائلة في التحية») */
+    static final String FAMILY_DEFAULT = "الله يحفظ";
 
     static String greeting(int part) { return greeting(part, FAMILY_DEFAULT); }
 
+    /** «صباح الخير» from Fajr to Dhuhr; from Dhuhr on, through the evening and the night until the next Fajr, «مساء الخير». */
     static String greeting(int part, String family) {
-        switch (part) {
-            case MORNING: return "صباح الخير " + family;
-            case DAY: return "طاب يومكم " + family;
-            case EVENING: return "مساء الخير " + family;
-            default: return "تصبحون على خير " + family;
-        }
+        return (part == MORNING ? "صباح الخير " : "مساء الخير ") + family;
+    }
+
+    /** the same by the city's hour, when the prayer times are not known: 4 to 11 is the morning */
+    static String byHour(int hour, String family) {
+        return greeting(hour >= 4 && hour < 12 ? MORNING : EVENING, family);
     }
 
     /** Open-Meteo's WMO weather code, as a short phrase that goes before «في المدينة». */

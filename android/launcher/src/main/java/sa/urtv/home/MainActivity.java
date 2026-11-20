@@ -1056,7 +1056,8 @@ public class MainActivity extends Activity {
         g.setGradientType(GradientDrawable.RADIAL_GRADIENT);
         g.setGradientCenter(0.5f, 0.78f);
         g.setGradientRadius(getResources().getDisplayMetrics().widthPixels * 0.62f);
-        g.setColors(new int[]{withAlpha(color, 0.5f), withAlpha(color, 0.14f), Color.TRANSPARENT});
+        // a light breath of the app's colour, not a wash: at half strength a green app turned the whole photo green
+        g.setColors(new int[]{withAlpha(color, 0.16f), withAlpha(color, 0.04f), Color.TRANSPARENT});
         glow.setBackground(g);
     }
 

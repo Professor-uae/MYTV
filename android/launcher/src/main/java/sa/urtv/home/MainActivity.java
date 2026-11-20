@@ -281,6 +281,13 @@ public class MainActivity extends Activity {
         scroll.setOverScrollMode(View.OVER_SCROLL_NEVER);
         scroll.setFillViewport(true);
         root.addView(scroll, new FrameLayout.LayoutParams(-1, -1));
+        // a finger scrolls to «كل التطبيقات» (no focus moves there to dim the photo): past half a screen the photo dims, back up it clears
+        scroll.setOnScrollChangeListener((sv, sx, sy, osx, osy) -> {
+            if (!sv.isInTouchMode()) return;   // the remote's focus already does it (fadeGlow)
+            boolean apps = sy > getResources().getDisplayMetrics().heightPixels / 2;
+            boolean was = osy > getResources().getDisplayMetrics().heightPixels / 2;
+            if (apps != was) gridShade.animate().alpha(apps ? 1f : 0f).setDuration(250).start();
+        });
 
         content = new LinearLayout(this);
         content.setOrientation(LinearLayout.VERTICAL);
@@ -339,8 +346,9 @@ public class MainActivity extends Activity {
         dockRow.setBackground(band);
         bottom.addView(dockRow, new LinearLayout.LayoutParams(-1, -2));
 
-        appsLabel = text(11, "sans-serif-medium", 0x99FFFFFF);
+        appsLabel = text(16, "sans-serif-medium", 0x99FFFFFF);
         appsLabel.setText("كل التطبيقات");
+        appsLabel.setShadowLayer(dp(6), 0, dp(1), 0xCC000000);
         appsLabel.setTextColor(GOLD);
         content.addView(appsLabel, llp(-2, -2, dp(68), dp(8), 0, dp(18)));
 
@@ -570,7 +578,7 @@ public class MainActivity extends Activity {
                 row = new LinearLayout(this);
                 row.setClipChildren(false);
                 row.setClipToPadding(false);
-                grid.addView(row, llp(-1, -2, 0, 0, 0, dp(26)));
+                grid.addView(row, llp(-1, -2, 0, 0, 0, dp(22)));
             }
             View tile = tile(rest.get(i), false);
             LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(0, -2, 1f);
@@ -583,6 +591,7 @@ public class MainActivity extends Activity {
             p.setMargins(dp(10), 0, i == cols - 1 ? 0 : dp(10), 0);
             row.addView(new View(this), p);
         }
+        appsLabel.setText("كل التطبيقات  ·  " + arabicDigits(String.valueOf(rest.size())));
         appsLabel.setVisibility(rest.isEmpty() ? View.GONE : View.VISIBLE);
         wireFocus();
 
@@ -592,14 +601,18 @@ public class MainActivity extends Activity {
         else if (!dockCards.isEmpty()) dockCards.get(0).requestFocus();
     }
 
-    /** A 16:9 card with the app's banner; the name shows under it while focused. */
+    /**
+     * A dock app: a 16:9 card with its banner, the name over the clock while focused. Every other app (the grid, «كل التطبيقات»):
+     * a rounded glass card, 4:3, with the icon large in the middle and its name always under it, so a touch screen (no focus
+     * to reveal it) reads them all and a finger has a big target; a press sinks the card a little.
+     */
     private View tile(App app, boolean inDock) {
         LinearLayout box = new LinearLayout(this);
         box.setOrientation(LinearLayout.VERTICAL);
         box.setClipChildren(false);
         box.setClipToPadding(false);
 
-        FrameLayout card = new AspectFrame(this);
+        FrameLayout card = inDock ? new AspectFrame(this) : new AspectFrame(this, 3, 4);
         card.setId(View.generateViewId());
         card.setFocusable(true);
         card.setClickable(true);
@@ -607,18 +620,28 @@ public class MainActivity extends Activity {
         card.setClipToOutline(true);
         card.setOutlineProvider(new ViewOutlineProvider() {
             @Override public void getOutline(View v, Outline o) {
-                o.setRoundRect(0, 0, v.getWidth(), v.getHeight(), dp(10));
+                o.setRoundRect(0, 0, v.getWidth(), v.getHeight(), dp(inDock ? 10 : 18));
             }
         });
         GradientDrawable bg = new GradientDrawable();
-        bg.setColor(app.isBanner ? 0xFF1C1C1E : darken(app.color, 0.45f));
+        if (inDock) bg.setColor(app.isBanner ? 0xFF1C1C1E : darken(app.color, 0.45f));
+        else {   // glass over the photo, a hint of the app's own colour at the bottom
+            bg.setOrientation(GradientDrawable.Orientation.TOP_BOTTOM);
+            bg.setColors(new int[]{0x2EFFFFFF, withAlpha(darken(app.color, 0.6f), 0.55f)});
+            bg.setCornerRadius(dp(18));
+            bg.setStroke(dp(1), 0x33FFFFFF);
+        }
         card.setBackground(bg);
 
         ImageView img = new ImageView(this);
         img.setImageDrawable(app.art);
-        if (app.isBanner) {
+        if (app.isBanner && inDock) {
             img.setScaleType(ImageView.ScaleType.CENTER_CROP);
             card.addView(img, new FrameLayout.LayoutParams(-1, -1));
+        } else if (!inDock) {   // the icon (or a banner, whole) large in the middle
+            img.setScaleType(ImageView.ScaleType.FIT_CENTER);
+            card.addView(img, new FrameLayout.LayoutParams(-1, -1));
+            img.setPadding(dp(app.isBanner ? 12 : 30), dp(app.isBanner ? 12 : 22), dp(app.isBanner ? 12 : 30), dp(app.isBanner ? 12 : 22));
         } else {
             img.setScaleType(ImageView.ScaleType.FIT_CENTER);
             card.addView(img, new FrameLayout.LayoutParams(-1, -1));
@@ -627,7 +650,7 @@ public class MainActivity extends Activity {
 
         // Focus ring and sheen, drawn above the art.
         GradientDrawable ring = new GradientDrawable();
-        ring.setCornerRadius(dp(10));
+        ring.setCornerRadius(dp(inDock ? 10 : 18));
         ring.setStroke(dp(2), 0xE6FFFFFF);
         ring.setOrientation(GradientDrawable.Orientation.TL_BR);
         ring.setColors(new int[]{0x26FFFFFF, 0x00FFFFFF, 0x00FFFFFF});
@@ -638,12 +661,20 @@ public class MainActivity extends Activity {
 
         box.addView(card, new LinearLayout.LayoutParams(-1, -2));
 
-        TextView label = text(11, "sans-serif-medium", Color.WHITE);
+        TextView label = text(15, "sans-serif-medium", Color.WHITE);
         label.setText(app.label);
         label.setSingleLine(true);
+        label.setEllipsize(android.text.TextUtils.TruncateAt.END);
         label.setGravity(Gravity.CENTER);
-        label.setAlpha(0f);
-        if (!inDock) box.addView(label, llp(-1, -2, 0, dp(10), 0, 0));
+        label.setShadowLayer(dp(5), 0, dp(1), 0xE6000000);   // readable over any photo
+        if (!inDock) box.addView(label, llp(-1, -2, 0, dp(8), 0, 0));
+        if (!inDock) card.setOnTouchListener((v, e) -> {   // a finger on it: it sinks a little, and comes back when lifted
+            int a = e.getActionMasked();
+            if (a == android.view.MotionEvent.ACTION_DOWN) v.animate().scaleX(0.94f).scaleY(0.94f).setDuration(90).start();
+            else if (a == android.view.MotionEvent.ACTION_UP || a == android.view.MotionEvent.ACTION_CANCEL)
+                v.animate().scaleX(1f).scaleY(1f).setDuration(160).start();
+            return false;   // the click and the long press stay the card's own
+        });
 
         card.setOnClickListener(v -> launch(new Intent(Intent.ACTION_MAIN)
                 .addCategory(app.category)
@@ -655,7 +686,7 @@ public class MainActivity extends Activity {
                     .setInterpolator(has ? new OvershootInterpolator(1.8f) : new DecelerateInterpolator())
                     .setDuration(has ? 320 : 200).start();
             shine.animate().alpha(has ? 1f : 0f).setDuration(160).start();
-            label.animate().alpha(has ? 1f : 0f).translationY(has ? dp(4) : 0).setDuration(200).start();
+            label.animate().translationY(has ? dp(4) : 0).setDuration(200).start();
             if (!has) return;
             lastFocusedId = v.getId();
             if (inDock) {
@@ -1504,12 +1535,14 @@ public class MainActivity extends Activity {
         return true;
     }
 
-    /** 16:9 container. */
+    /** A container of a fixed shape: 16:9 (the dock's banners), or height:width as given (3:4 for the grid's icon cards). */
     static final class AspectFrame extends FrameLayout {
-        AspectFrame(Context c) { super(c); }
+        private final int num, den;
+        AspectFrame(Context c) { this(c, 9, 16); }
+        AspectFrame(Context c, int num, int den) { super(c); this.num = num; this.den = den; }
         @Override protected void onMeasure(int w, int h) {
             int width = MeasureSpec.getSize(w);
-            super.onMeasure(w, MeasureSpec.makeMeasureSpec(width * 9 / 16, MeasureSpec.EXACTLY));
+            super.onMeasure(w, MeasureSpec.makeMeasureSpec(width * num / den, MeasureSpec.EXACTLY));
         }
     }
 

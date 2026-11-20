@@ -81,6 +81,10 @@ check("photos: every Unsplash link credited in docs/PHOTO-CREDITS.md", all(u in 
       [u for u in linked if u not in credits])
 bundled = json.loads((ROOT / "assets/backgrounds/backgrounds.json").read_text(encoding="utf-8"))
 check("bundled backgrounds exist", all((ROOT / "assets/backgrounds" / b["file"]).is_file() for b in bundled))
+bundled_uae = json.loads((ROOT / "assets/backgrounds-uae/backgrounds.json").read_text(encoding="utf-8"))
+check("bundled Abu Dhabi backgrounds exist, are credited, and stay small (under 600 KB each)",
+      len(bundled_uae) >= 10 and all((ROOT / "assets/backgrounds-uae" / b["file"]).is_file()
+          and (ROOT / "assets/backgrounds-uae" / b["file"]).stat().st_size < 600_000 and b["file"] in credits for b in bundled_uae))
 
 # ---- verse and hadith: only checked text, and every character has a glyph
 page = (ROOT / "dist/tv.html").read_text(encoding="utf-8")
@@ -253,6 +257,10 @@ check("settings: a prayer's minutes change by a tap (left half +, right half −
       "PrayerAdj.step(a[k], tapAt[0] < 0.5f ? 1 : -1)" in (ROOT / "android/app/src/main/java/sa/urtv/screensaver/SettingsActivity.java").read_text(encoding="utf-8"))
 check("home: a swipe on «يُتلى الآن» is ◀ ▶ (previous/next surah) for a touch screen",
       "nowCard.setOnTouchListener" in (ROOT / "android/launcher/src/main/java/sa/urtv/home/MainActivity.java").read_text(encoding="utf-8"))
+# «كل التطبيقات» for a touch screen: every name shown (no focus to reveal it), a press shows, the photo dims when scrolled to
+_home = (ROOT / "android/launcher/src/main/java/sa/urtv/home/MainActivity.java").read_text(encoding="utf-8")
+check("home grid: names always shown, a press sinks the card, scrolling to the apps dims the photo",
+      "label.setAlpha(0f)" not in _home and "scaleX(0.94f)" in _home and "scroll.setOnScrollChangeListener" in _home)
 # the preview and the settings must open fresh: an open one comes back with the settings it opened with, or in front of
 # the one asked for (a TV test read the preview as the settings screen, and as the settings not working)
 starts = [f"{f.name}: {l.strip()}" for f in sorted((ROOT / "optimize").glob("*.sh"))

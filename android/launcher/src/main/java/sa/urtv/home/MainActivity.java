@@ -1050,15 +1050,10 @@ public class MainActivity extends Activity {
 
     // ---------------------------------------------------------------- glow
 
+    /** The photo is shown as it is: no glow in the focused app's colour over it (a green app turned Abu Dhabi green). The colour is kept for nothing else. */
     private void setGlow(int color) {
         glowColor = color;
-        GradientDrawable g = new GradientDrawable();
-        g.setGradientType(GradientDrawable.RADIAL_GRADIENT);
-        g.setGradientCenter(0.5f, 0.78f);
-        g.setGradientRadius(getResources().getDisplayMetrics().widthPixels * 0.62f);
-        // a light breath of the app's colour, not a wash: at half strength a green app turned the whole photo green
-        g.setColors(new int[]{withAlpha(color, 0.16f), withAlpha(color, 0.04f), Color.TRANSPARENT});
-        glow.setBackground(g);
+        glow.setBackground(null);
     }
 
     private void animateGlow(int to) {

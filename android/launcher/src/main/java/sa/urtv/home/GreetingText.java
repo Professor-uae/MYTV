@@ -19,7 +19,7 @@ final class GreetingText {
     }
 
     /** the words the greeting ends with until the owner writes their own («اسم العائلة في التحية») */
-    static final String FAMILY_DEFAULT = "الله يحفظ";
+    static final String FAMILY_DEFAULT = "الله يحفظك";
 
     static String greeting(int part) { return greeting(part, FAMILY_DEFAULT); }
 

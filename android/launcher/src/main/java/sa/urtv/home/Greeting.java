@@ -20,7 +20,7 @@ import java.util.Locale;
 import sa.urtv.home.tilawah.DayParts;
 
 /**
- * The greeting above the home screen's clock («صباح الخير الله يحفظ» from Fajr to Dhuhr, «مساء الخير الله يحفظ» from Dhuhr until
+ * The greeting above the home screen's clock («صباح الخير الله يحفظك» from Fajr to Dhuhr, «مساء الخير الله يحفظك» from Dhuhr until
  * the next Fajr, by the city's time; GreetingText) and under it the weather of the screensaver's city and the next sunrise or sunset.
  *
  * Settings come from the screensaver's ConfigProvider (city, digits and «التحية والطقس»). The weather is asked of

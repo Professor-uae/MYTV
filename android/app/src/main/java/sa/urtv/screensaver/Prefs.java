@@ -585,8 +585,8 @@ final class Prefs {
 
     /** The greeting and the weather line on the launcher's home screen (default on). Off: the plain good-morning it had. */
     boolean greeting() { return sp.getBoolean("greeting", true); }
-    /** The words the greetings end with (default «الله يحفظ»: «صباح الخير الله يحفظ»), a family name for one; up to 40 characters. */
-    String family() { String f = sp.getString("family", "").trim(); return f.isEmpty() ? "الله يحفظ" : f; }
+    /** The words the greetings end with (default «الله يحفظك»: «صباح الخير الله يحفظك»), a family name for one; up to 40 characters. */
+    String family() { String f = sp.getString("family", "").trim(); return f.isEmpty() ? "الله يحفظك" : f; }
     void setFamily(String v) { String f = v == null ? "" : v.trim(); if (f.length() > 40) f = f.substring(0, 40); sp.edit().putString("family", f).apply(); }
     void setGreeting(boolean v) { sp.edit().putBoolean("greeting", v).apply(); }
 
